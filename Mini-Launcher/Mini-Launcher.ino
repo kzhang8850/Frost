@@ -3,13 +3,13 @@
  Uses PID for motor control
  */
  
-//#include <Wire.h>
-//#include <Adafruit_MotorShield.h>
-//#include "utility/Adafruit_MS_PWMServoDriver.h"
-//
-//Adafruit_MotorShield AFMS = Adafruit_MotorShield(); 
-//
-//Adafruit_DCMotor *Motor = AFMS.getMotor(4);
+#include <Wire.h>
+#include <Adafruit_MotorShield.h>
+#include "utility/Adafruit_MS_PWMServoDriver.h"
+
+Adafruit_MotorShield AFMS = Adafruit_MotorShield(); 
+
+Adafruit_DCMotor *Motor = AFMS.getMotor(4);
 
 
 int baseMotorSpeed = 0;
@@ -20,8 +20,8 @@ double iMin = -200; //Max and min allowable integrator state
 
 //Gains for pid
 double pGain= 2;
-double iGain=0.001;
-double dGain=30;
+double iGain=0;
+double dGain=0;
 
 //pid coefficients(terms)
 double pTerm;
@@ -46,7 +46,7 @@ int dt = 10;
 int previousTime = 0;
 
 //angle and power variables
-int angle;
+double angle;
 int power;
 
 //used in String parsing input
@@ -70,11 +70,11 @@ void setup() {
   power = 10;
 
   //sets up motors
-//  AFMS.begin();
-//
-//  Motor->setSpeed(baseMotorSpeed);
-//  Motor->run(FORWARD);
-//  Motor->run(RELEASE);
+  AFMS.begin();
+
+  Motor->setSpeed(baseMotorSpeed);
+  Motor->run(FORWARD);
+  Motor->run(RELEASE);
   
 }
 
@@ -104,31 +104,35 @@ void loop() {
 
       //Calculate new motor speed
       motorSpeed = baseMotorSpeed + pTerm + dTerm + iTerm;
+      if(motorSpeed > 255){
+        motorSpeed = 255;
+      }
       //Left sensor detecting tape, turn left
-      if (currentError > 0){
-//        Motor->setSpeed(motorSpeed);
-//        rightMotor->run(FORWARD);
+      if (motorSpeed > 0){
+        Motor->setSpeed(motorSpeed);
+        Motor->run(FORWARD);
 
        
       }
       //Right sensor detecting tape, turn right
       else{
-//        Motor->setSpeed(motorSpeed);
-//        Motor->run(BACKWARD);
+        Motor->setSpeed(motorSpeed);
+        Motor->run(BACKWARD);
 
       }
     }
     //Go straight
     else{
       motorSpeed = baseMotorSpeed;
-//      Motor->setSpeed(motorSpeed);
-//      Motor->run(FORWARD);
+      Motor->setSpeed(motorSpeed);
+      Motor->run(FORWARD);
     }
     //Resets interval and prints data
     previousTime = millis();
   }
-  Serial.print("Outputting power as ");
-  Serial.println(power);
+  Serial.print("Outputting angle as ");
+  Serial.println((float(SensorValue) * 180) /1024);
+  
 
 }
 
@@ -197,12 +201,13 @@ void serialEvent(){
         angle = value;
       }
     }
-    
+
+    angle = (angle * 1024)/180;
     Serial.print("Angle set to: ");
     Serial.println(angle);
     Serial.print("Power set to: ");
     Serial.println(power);
-    delay(2000);
+    delay(1000);
   }
 }
 
