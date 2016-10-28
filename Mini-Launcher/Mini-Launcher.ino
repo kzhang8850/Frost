@@ -19,13 +19,14 @@ Adafruit_DCMotor *AimMotor = AFMS.getMotor(4);
 
 int baseMotorSpeed = 0;
 int SensorPin = A0;
-int AngleSensorValue;
+int AngleSensorValue = 0;
 int AimMotorSpeed = baseMotorSpeed;
 
 
 
 //Power Motor
-Adafruit_DCMotor *PowerMotor = AFMS.getMotor(3);
+Adafruit_DCMotor *PowerMotor1 = AFMS.getMotor(1);
+Adafruit_DCMotor *PowerMotor2 = AFMS.getMotor(2);
 
 int PowerMotorSpeed = 0;
 int Encoder = A1;
@@ -46,9 +47,9 @@ double iMax = 200;
 double iMin = -200; //Max and min allowable integrator state
 
 //Gains for pid
-double pGain= 2;
-double iGain=0;
-double dGain=0;
+double pGain= 1.5;
+double iGain= 0.00;
+double dGain= 0;
 
 //pid coefficients(terms)
 double pTerm;
@@ -71,11 +72,14 @@ int previousTime = 0;
 
 //angle and power variables
 double AimAngle;
-int Distance;
-int TargetPowerAngle;
+int Distance = 0;
+double TargetPowerAngle;
 int PowerAngle;
 
 
+//offset
+double panOffset = 86.0*1024.0/180.0;
+double powerOffset = 94.0*1024.0/180.0;
 
 
 //used in String parsing input
@@ -86,13 +90,16 @@ String ID;
 String stringvalue;
 int value;
 int len;
+int PowerError = 0;
 
 //user input for power and angle
 String input;
 
 
+
 //Determine when to shoot
 boolean firing = false;
+boolean powered = false;
 
 //Servo stuff
 #include <Servo.h>
@@ -107,12 +114,12 @@ void setup() {
   input = "default";
   AimAngle = 0;
   TargetPowerAngle = 0;
-  Distance = 10;
+  Distance = 0;
   PowerAngle = 0;
 
   //Servo set up
- // latch.attach(9);
- // latch.write(0);
+  latch.attach(9);
+  latch.write(170);
 
   //sets up motors
   AFMS.begin();
@@ -121,52 +128,68 @@ void setup() {
   AimMotor->run(FORWARD);
   AimMotor->run(RELEASE);
 
-//  PowerMotor->setSpeed(PowerMotorSpeed);
-//  PowerMotor->run(FORWARD);
-//  PowerMotor->run(RELEASE);
+  PowerMotor1->setSpeed(PowerMotorSpeed);
+  PowerMotor1->run(FORWARD);
+  PowerMotor1->run(RELEASE);
 
+  PowerMotor2->setSpeed(PowerMotorSpeed);
+  PowerMotor2->run(FORWARD);
+  PowerMotor2->run(RELEASE);
 
-//  pinMode(Switch, INPUT);
+  pinMode(Switch, INPUT);
   
-//  resetLauncher();
+  resetLauncher();
+  delay(500);
+  activateLatch();
   
 }
 
 void loop() {
-
-//  switchValue = digitalRead(Switch);
-//  if(switchValue == HIGH){
-//    activateLatch();
-//  }
+  TargetPowerAngle = double(Distance) * 1024.0 /180.0;
+  PowerAngle = -1 * analogRead(Encoder);
+  PowerAngle = PowerAngle + powerOffset;
+//  Serial.println(TargetPowerAngle - PowerAngle);
 
   if(Serial.available()){
     getInput();
-//
-//    if(firing == true && abs(currentError) <= errorThreshold){
-//      armLauncher(Distance);
-//      deactivateLatch();
-//      delay(1000);
-//      resetLauncher();
-//      
-//      Serial.println("I have fired.");
-//      firing = false;
-//    }
   }
-
+    if(firing != true && powered == true){
+      armLauncher(Distance);
+      Serial.println("test");
+    }
+    else if(powered && firing){
+      deactivateLatch();
+      delay(500);
+      PowerMotor1 ->run(RELEASE);
+      PowerMotor2 ->run(RELEASE);
+      AimMotor->run(RELEASE);
+      delay(500);
+      resetLauncher();
+      delay(200);
+      activateLatch();
+      
+      Serial.println("I have fired.");
+      firing = false;
+      powered = false;
+    }
   
  if (millis() - previousTime > dt){
 
     AngleSensorValue = analogRead(SensorPin);
+    AngleSensorValue = AngleSensorValue - panOffset;
+    AngleSensorValue = -1 * AngleSensorValue;
     previousError = currentError;
     currentError = AngleSensorValue - AimAngle;
-  
+//    Serial.println(currentError);
     //Launcher not at targeted pan angle
     if (abs(currentError) > errorThreshold) {
       Pan();
+      
           
     }
     //Go straight
     else{
+      iState = 0;
       AimMotorSpeed = baseMotorSpeed;
       AimMotor->setSpeed(AimMotorSpeed);
       AimMotor->run(RELEASE);
@@ -174,8 +197,8 @@ void loop() {
     //Resets interval and prints data
      previousTime = millis();
 
-    Serial.print("Outputting angle as ");
-    Serial.println((float(AngleSensorValue) * 180) /1024);
+//    Serial.print("Outputting angle as ");
+//    Serial.println((float(AngleSensorValue) * 180) /1024);
     
   }
   
@@ -201,24 +224,23 @@ void Pan(){
     //Calculate new motor speed
     AimMotorSpeed = baseMotorSpeed + pTerm + dTerm + iTerm;
     
-    if(AimMotorSpeed > 255){
-      AimMotorSpeed = 255;
+    if(AimMotorSpeed > 100){
+      AimMotorSpeed = 100;
     }
-    if(AimMotorSpeed < -255){
-      AimMotorSpeed = -255;
+    if(AimMotorSpeed < -100){
+      AimMotorSpeed = -100;
     }
-
     //Gotta turn forward to get back to target angle
     if (AimMotorSpeed > 0){
       AimMotor->setSpeed(abs(AimMotorSpeed));
-      AimMotor->run(FORWARD);
+      AimMotor->run(BACKWARD);
 
      
     }
     //Gotta turn backward to get back to target angle
     else{
       AimMotor->setSpeed(abs(AimMotorSpeed));
-      AimMotor->run(BACKWARD);
+      AimMotor->run(FORWARD);
 
     }
 
@@ -228,9 +250,14 @@ void Pan(){
 void getInput(){
 
     input = Serial.readString();
+
+    if(input == "fire"){
+      firing = true;
+    }
     
     len = input.length()+1;
     separator = input.indexOf(",");
+
     
     if (separator != -1){
      
@@ -250,7 +277,8 @@ void getInput(){
       
       if(ID == "power"){
         Distance = value;
-        firing = true;
+        powered = true;
+        
       }
       else if(ID == "angle"){
         AimAngle = value;
@@ -269,7 +297,8 @@ void getInput(){
       
       if(ID == "power"){
         Distance = value;
-        firing = true;
+        powered =  true;
+        
       }
       else if(ID == "angle"){
         AimAngle = value;
@@ -279,78 +308,111 @@ void getInput(){
     }
     else{
       
-      separator = input.indexOf("=");
-      ID = input.substring(0, separator);
-      stringvalue = input.substring(separator+1, len);
-      stringvalue.trim();
-      value = stringvalue.toInt();
-      ID.trim();
-      
-      if( ID == "power"){
-        Distance = value;
-        firing = true;
-       
-      }
-      else if(ID == "angle"){
-        AimAngle = value;
+        separator = input.indexOf("=");
+        if (separator != -1){
+        ID = input.substring(0, separator);
+        stringvalue = input.substring(separator+1, len);
+        stringvalue.trim();
+        value = stringvalue.toInt();
+        ID.trim();
         
+        if( ID == "power"){
+          Distance = value;
+          powered = true;
+          
+         
+        }
+        else if(ID == "angle"){
+          AimAngle = value;
+          
+        }
       }
     }
-
-    AimAngle = (AimAngle * 1024)/180;
-    Serial.print("Angle set to: ");
-    Serial.println(AimAngle);
-    Serial.print("Distance set to: ");
-    Serial.println(Distance);
-    delay(1000);
+    if(separator != -1){
+      AimAngle = (AimAngle * 1024)/180;
+      Serial.print("Angle set to: ");
+      Serial.println(AimAngle);
+      Serial.print("Distance set to: ");
+      Serial.println(Distance);
+      delay(1000);
+    }
 }
+
+
 
 
 
 //Power Functions
 void activateLatch(){
-  latch.write(90);
+  latch.write(60);
   delay(15);
   PowerMotorSpeed = 0;
-  PowerMotor ->setSpeed(PowerMotorSpeed);
-  PowerMotor ->run(RELEASE);
+  PowerMotor1 ->setSpeed(PowerMotorSpeed);
+  PowerMotor1 ->run(RELEASE);
+  PowerMotor2 ->setSpeed(PowerMotorSpeed);
+  PowerMotor2 ->run(RELEASE);
 }
 
 void armLauncher(int distance){
-  int velocity = 10;   ///////////THIS IS HARDCODED
-  TargetPowerAngle = .5 * asin(9.81 * pow(distance, 2) / velocity);
+//  int velocity = 10;   ///////////THIS IS HARDCODED
+  TargetPowerAngle = (double(distance) * 1024.0) /180.0;
 
-  PowerAngle = analogRead(Encoder);
-  while(PowerAngle < TargetPowerAngle){
-    PowerAngle = analogRead(Encoder);
-    PowerMotorSpeed = 50;
-    PowerMotor ->setSpeed(PowerMotorSpeed);
-    PowerMotor ->run(FORWARD);
+  PowerAngle = -1 * analogRead(Encoder);
+  PowerAngle = PowerAngle + powerOffset;
+  //Serial.println(PowerError);
+  //PowerError = TargetPowerAngle - PowerAngle;
+  //PowerMotorSpeed = PowerError;
+  PowerMotorSpeed = 127;
+  if (PowerMotorSpeed > 127){
+    PowerMotorSpeed = 127;
+  }else if(PowerMotorSpeed <= 0){
+    PowerMotorSpeed = 0;
   }
-
+  if(PowerAngle < TargetPowerAngle){
+    PowerMotor1 ->setSpeed(PowerMotorSpeed);
+    PowerMotor1 ->run(FORWARD);
+    PowerMotor2 ->setSpeed(PowerMotorSpeed);
+    PowerMotor2 ->run(BACKWARD);
+    //Serial.println("run motors");
+  }else{
+    firing = true;
+    PowerMotor1 ->setSpeed(15);
+    PowerMotor1 ->run(FORWARD);
+    PowerMotor2 ->setSpeed(15);
+    PowerMotor2 ->run(BACKWARD);
+  }
   
 }
 
 void deactivateLatch(){
-  latch.write(0);
-  delay(15);
-  PowerMotorSpeed = 5;
-  PowerMotor ->setSpeed(PowerMotorSpeed);
-  PowerMotor ->run(FORWARD);
+  latch.write(170);
+  //PowerMotorSpeed = 0;
+  //PowerMotor1 ->setSpeed(PowerMotorSpeed);
+  //PowerMotor1 ->run(FORWARD);
+  //PowerMotor2 ->setSpeed(PowerMotorSpeed);
+  //PowerMotor2 ->run(BACKWARD);
   
 }
 
 void resetLauncher(){
-  PowerAngle = analogRead(Encoder);
+  PowerAngle = -1 * analogRead(Encoder);
+  PowerAngle = PowerAngle + powerOffset;
+  AimAngle = 0;
   while(PowerAngle > 0){
-    PowerAngle = analogRead(Encoder);
-    PowerMotorSpeed = 15;
-    PowerMotor ->setSpeed(PowerMotorSpeed);
-    PowerMotor ->run(BACKWARD);
+    PowerAngle = -1 * analogRead(Encoder);
+    PowerAngle = PowerAngle + powerOffset;
+    PowerMotorSpeed = 60;
+    PowerMotor1 ->setSpeed(PowerMotorSpeed);
+    PowerMotor1 ->run(BACKWARD);
+    PowerMotor2 ->setSpeed(PowerMotorSpeed);
+    PowerMotor2 ->run(FORWARD);
+    
   }
   PowerMotorSpeed = 0;
-  PowerMotor ->setSpeed(PowerMotorSpeed);
-  PowerMotor ->run(RELEASE);
+  PowerMotor1 ->setSpeed(PowerMotorSpeed);
+  PowerMotor1 ->run(RELEASE);
+  PowerMotor2 ->setSpeed(PowerMotorSpeed);
+  PowerMotor2 ->run(RELEASE);
 
   
 }
