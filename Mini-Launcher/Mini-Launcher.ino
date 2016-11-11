@@ -1,5 +1,5 @@
 /*
- Prototype for Mini Launcher, does Pan and Power calculations
+ Prototyp`e for Mini Launcher, does Pan and Power calculations
  Uses PID for motor control of Pan, and has user input
  */
 
@@ -110,7 +110,7 @@ Servo latch;
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
+  Serial.begin(115200);
   input = "default";
   AimAngle = 0;
   TargetPowerAngle = 0;
@@ -145,6 +145,7 @@ void setup() {
 }
 
 void loop() {
+  Serial.setTimeout(50);
   TargetPowerAngle = double(Distance) * 1024.0 /180.0;
   PowerAngle = -1 * analogRead(Encoder);
   PowerAngle = PowerAngle + powerOffset;
@@ -176,8 +177,10 @@ void loop() {
  if (millis() - previousTime > dt){
 
     AngleSensorValue = analogRead(SensorPin);
+
     AngleSensorValue = AngleSensorValue - panOffset;
     AngleSensorValue = -1 * AngleSensorValue;
+    //Serial.println(AngleSensorValue);
     previousError = currentError;
     currentError = AngleSensorValue - AimAngle;
 //    Serial.println(currentError);
@@ -280,7 +283,7 @@ void getInput(){
         powered = true;
         
       }
-      else if(ID == "angle"){
+      else if(ID == "a"){
         AimAngle = value;
         
       }
@@ -300,7 +303,7 @@ void getInput(){
         powered =  true;
         
       }
-      else if(ID == "angle"){
+      else if(ID == "a"){
         AimAngle = value;
         
       }
@@ -322,7 +325,7 @@ void getInput(){
           
          
         }
-        else if(ID == "angle"){
+        else if(ID == "a"){
           AimAngle = value;
           
         }
@@ -334,7 +337,7 @@ void getInput(){
       Serial.println(AimAngle);
       Serial.print("Distance set to: ");
       Serial.println(Distance);
-      delay(1000);
+      //delay(1000);
     }
 }
 
