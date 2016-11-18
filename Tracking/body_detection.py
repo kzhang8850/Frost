@@ -61,9 +61,9 @@ def non_max_suppression_fast(boxes, overlapThresh):
 
 if __name__ == "__main__":
 
-    winStride = (8,8)
+    winStride = (4,4)
     padding = (16,16)
-    scale = 1.05
+    scale = 1.03
     meanShift = False
 
     cap = cv2.VideoCapture(0)
