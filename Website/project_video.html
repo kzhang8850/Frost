@@ -1,0 +1,38 @@
+<!DOCTYPE HTML>
+
+<html>
+	<head>
+		<title>Project Video</title>
+		<meta charset="utf-8" />
+		<!--<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
+		<!--<link rel="stylesheet" href="assets/css/background_video.css" />
+		<!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
+	</head>
+	<body>
+        <div class="video-background">
+            <div class="video-foreground">
+                <iframe id="custom_video" src="https://www.youtube.com/embed/i1KmBP7s_ik?rel=0&autoplay=1" frameborder="0" allowfullscreen></iframe>
+            
+            </div>
+        </div>
+        
+        <!-- Scripts -->
+        <script src="assets/js/jquery.min.js"></script>
+        <script src="assets/js/jquery.dropotron.min.js"></script>
+        <script src="assets/js/jquery.scrollgress.min.js"></script>
+        <script src="assets/js/skel.min.js"></script>
+        <script src="assets/js/util.js"></script>
+        <!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
+        <script>
+            $(function(){
+              $('#custom_video').css({ width: $(window).innerWidth() + 'px', height: $(window).innerHeight() + 'px' });
+
+              // If you want to keep full screen on window resize
+              $(window).resize(function(){
+                $('#custom_video').css({ width: $(window).innerWidth() + 'px', height: $(window).innerHeight() + 'px' });
+              });
+            });
+        </script>
+    </body>
+</html>
