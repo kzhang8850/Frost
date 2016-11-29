@@ -120,32 +120,36 @@ if __name__ == "__main__":
 		(rects, weights) = hog.detectMultiScale(frame, winStride=winStride,
 		padding=padding, scale=scale, useMeanshiftGrouping=meanShift)
 
-		rects = non_max_suppression_fast(rects, 0.4)
-
-
-		if rects is None and len(history) > 0 and any(item is not None for item in history):
+		print len(rects)
+		if len(rects) == 0 and len(history) > 0 and any(len(item) > 0 for item in history):
+			print "i'm in history"
 			for i in range(len(history)-1, -1, -1):
-				if history[i] is not None:
-					for (x, y, w, h) in history[i]:
+				if len(history[i]) > 0:
+					hist = non_max_suppression_fast(history[i], 0.5)
+					for (x, y, w, h) in hist:
 						cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 						people.append((x * 57/640, (x + w) * 57/640))
+					break
 		else:
+			rects = non_max_suppression_fast(rects, 0.5)
 			for (x, y, w, h) in rects:
 				cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 				people.append((x * 57/640, (x + w) * 57/640))
 
-		for person in people:
-			print person
-
-		targets = find_targets(people)
-		print targets
+		# for person in people:
+		# 	print person
+		#
+		# targets = find_targets(people)
+		# print targets
 
 		if len(history) < 10:
 			history.append(rects)
 		else:
 			history.pop(0)
 			history.append(rects)
+		# print history
 
+		people = []
 
 		cv2.namedWindow('frame', 0)
 		cv2.resizeWindow('frame', 320, 240)
