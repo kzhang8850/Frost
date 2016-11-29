@@ -60,6 +60,10 @@ class BodyDetector(object):
 				cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 			return rects
 
+	def shut_down(self):
+		self.cam.release()
+		cv2.destroyAllWindows()
+
 
 	# Malisiewicz et al.
 	def non_max_suppression_fast(self,boxes, overlapThresh):
@@ -189,6 +193,4 @@ if __name__ == "__main__":
 		if k == 27:
 
 			break
-
-	cap.release()
-	cv2.destroyAllWindows()
+	Bodies.shut_down()
