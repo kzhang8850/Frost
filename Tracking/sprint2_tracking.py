@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import cv
-import cv2
 import serial
 import time
 from timeit import default_timer as timer
@@ -70,7 +69,7 @@ class Target:
 
                 pt1 = (bound_rect[0], bound_rect[1])
                 pt2 = (bound_rect[0] + bound_rect[2], bound_rect[1] + bound_rect[3])
-                if((pt1[0] - pt2[0])* (pt1[1]- pt2[1]) > 2000):
+                if((pt1[0] - pt2[0])* (pt1[1]- pt2[1]) > 1000):
                     points.append(pt1)
                     points.append(pt2)
                     cv.Rectangle(color_image, pt1, pt2, cv.CV_RGB(255,0,0), 1)
