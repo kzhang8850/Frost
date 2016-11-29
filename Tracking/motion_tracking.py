@@ -176,7 +176,7 @@ class Target:
 		###############################
 		### Face detection stuff
 		#haar_cascade = cv.Load( 'haarcascades/haarcascade_frontalface_default.xml' )
-		haar_cascade = cv.Load( 'haarcascades/haarcascade_frontalface_alt.xml' )
+		#haar_cascade = cv.Load( 'haarcascades/haarcascade_frontalface_alt.xml' )
 		#haar_cascade = cv.Load( 'haarcascades/haarcascade_frontalface_alt2.xml' )
 		#haar_cascade = cv.Load( 'haarcascades/haarcascade_mcs_mouth.xml' )
 		#haar_cascade = cv.Load( 'haarcascades/haarcascade_eye.xml' )
@@ -495,11 +495,11 @@ class Target:
 				cv.CvtColor( grey_image, display_image, cv.CV_GRAY2RGB )
 				image = display_image  # Re-use display image here
 				cv.PutText( image, "Motion Mask", text_coord, text_font, text_color )
-			elif image_name == "faces":
+			"""elif image_name == "faces":
 				# Do face detection
 				detect_faces( camera_image, haar_cascade, mem_storage )				
 				image = camera_image  # Re-use camera image here
-				cv.PutText( image, "Face Detection", text_coord, text_font, text_color )
+				cv.PutText( image, "Face Detection", text_coord, text_font, text_color )"""
 			
 			cv.ShowImage( "Target", image )
 			

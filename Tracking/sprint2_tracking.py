@@ -96,9 +96,9 @@ class Target:
                 
                 #print("angle = " + str(i))
 
-            if (timer() - prev_time > .1):
+            """if (timer() - prev_time > .1):
                 ser.write(str(i))
-                prev_time = timer()
+                prev_time = timer()"""
 
             #ser.write(str(10))
             #time.sleep(.5)
