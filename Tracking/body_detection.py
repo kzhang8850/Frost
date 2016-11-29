@@ -47,7 +47,7 @@ class BodyDetector(object):
 	def draw_rectangles(self,rects, frame):
 
 		if len(rects) == 0 and len(self.history) > 0 and any(len(item) > 0 for item in self.history):
-			print "i'm in history"
+			#print "i'm in history"
 			for i in range(len(self.history)-1, -1, -1):
 				if len(self.history[i]) > 0:
 					hist = self.non_max_suppression_fast(self.history[i], 0.5)

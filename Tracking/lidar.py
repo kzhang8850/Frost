@@ -4,6 +4,9 @@ import binascii
 import pygame
 import sys
 import math
+import cv2
+import numpy as np
+import body_detection
 
 ser = serial.Serial()
 ser.port='/dev/ttyACM0'
@@ -106,6 +109,7 @@ class LidarModel(object):
 
 
 if __name__ == '__main__':
+    Bodies = body_detection.BodyDetector()
 
     pygame.init()
     model = LidarModel()
@@ -113,6 +117,7 @@ if __name__ == '__main__':
     view = LidarView(screen, model)
 
     while True:
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT: sys.exit()
         bytesRead = ser.inWaiting()
@@ -123,51 +128,67 @@ if __name__ == '__main__':
         #for i, item in enumerate(data):
         #    print(ord(item))
             #print 'test'
-        data = ser.read()
-        if(len(data) > 0):
-        #print(data)
-            if ((ord(data) == 0xCC) and (sync == 0)) :
-                sync+=1
-            elif ((ord(data) == 0xDD) and (sync == 1)) :
-                sync+=1
-            elif ((ord(data) == 0xEE) and (sync == 2)) :
-                sync+=1
-            elif ((ord(data) == 0xFF) and (sync == 3)) :
-                sync+=1
-            else:
-                sync = 0
+        while(bytesRead > 1):
+            bytesRead = ser.inWaiting()
+            data = ser.read()
+            if(len(data) > 0):
+                #print(sync)
+                if ((ord(data) == 0xCC) and (sync == 0)) :
+                    sync+=1
+                elif ((ord(data) == 0xDD) and (sync == 1)) :
+                    sync+=1
+                elif ((ord(data) == 0xEE) and (sync == 2)) :
+                    sync+=1
+                elif ((ord(data) == 0xFF) and (sync == 3)) :
+                    sync+=1
+                else:
+                    sync = 0
 
-            #print(inSync)
-            if(inSync):
-                if(j == 0):
-                    #print("HighBit:")
-                    #print(ord(data)<<8)
-                    tempAngle = ord(data) << 8
-                    j += 1
-                    dataReady = False
-                elif(j == 1):
-                    #print("LowBit:")
-                    #print(ord(data))
-                    angle = tempAngle + ord(data)
-                    j += 1
-                    dataReady = False
-                elif(j == 2):
-                    tempDistance = ord(data) << 8
-                    j += 1
-                    dataReady = False
-                elif(j == 3):
-                    distance = tempDistance + ord(data)
-                    j = 0
-                    dataReady = True
-                if(sync == 0 and dataReady):
-                    dataArray.append((angle, distance))
-                    #print(angle , distance)
-                    #time.sleep()
-            if (sync == 4):
-                inSync = True
-                counter += 1
-                view.draw(dataArray)
-                dataArray = []
+                #print(inSync)
+                if(inSync):
+                    if(j == 0):
+                        #print("HighBit:")
+                        #print(ord(data)<<8)
+                        tempAngle = ord(data) << 8
+                        j += 1
+                        dataReady = False
+                    elif(j == 1):
+                        #print("LowBit:")
+                        #print(ord(data))
+                        angle = tempAngle + ord(data)
+                        j += 1
+                        dataReady = False
+                    elif(j == 2):
+                        tempDistance = ord(data) << 8
+                        j += 1
+                        dataReady = False
+                    elif(j == 3):
+                        distance = tempDistance + ord(data)
+                        j = 0
+                        dataReady = True
+                    if(sync == 0 and dataReady):
+                        dataArray.append((angle, distance))
+                        #print(angle , distance)
+                        #time.sleep()
 
+                if (sync == 4):
+                    inSync = True
+                    counter += 1
+                    view.draw(dataArray)
+                    dataArray = []
+       #if(sync == 4):
+        #print("headsads")
+        crowd = Bodies.find_bodies()
+
+        # Targeter.track(crowd)
+
+        k = cv2.waitKey(30) & 0xff
+
+        if k == 27:
+
+            break
 
     ser.close()
+
+    Bodies.cam.release()
+    cv2.destroyAllWindows()
