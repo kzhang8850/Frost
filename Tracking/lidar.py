@@ -31,7 +31,7 @@ insync = False
 dataReady = False
 dataArray = []
 
-angle_1 = 0;
+angle_1 = 340;
 angle_2 = 70;
 est_dist = 500;
 est_threshold = 30;
@@ -89,8 +89,12 @@ class LidarView(object):
         pygame.draw.line(screen, pygame.Color('green'), (self.center[0], model.height - (self.center[1])),(self.center[0]-line1_x_pos, model.height - (self.center[1]-line1_y_pos)),1)
         pygame.draw.line(screen, pygame.Color('green'), (self.center[0], model.height - (self.center[1])),(self.center[0]-line2_x_pos, model.height - (self.center[1]-line2_y_pos)),1)
 
-        pygame.draw.arc(screen, pygame.Color('blue'), (self.center[0]-((est_dist+est_threshold)*self.scaling), model.height - (self.center[1])-((est_dist+est_threshold)*self.scaling),(est_dist+est_threshold)*2*self.scaling,(est_dist+est_threshold)*2*self.scaling),0,2*math.pi)
-        pygame.draw.arc(screen, pygame.Color('blue'), (self.center[0]-((est_dist-est_threshold)*self.scaling), model.height - (self.center[1])-((est_dist-est_threshold)*self.scaling),(est_dist-est_threshold)*2*self.scaling,(est_dist-est_threshold)*2*self.scaling),0,2*math.pi)
+        if angle_1>angle_2:
+            pygame.draw.arc(screen, pygame.Color('blue'), (self.center[0]-((est_dist+est_threshold)*self.scaling), model.height - (self.center[1])-((est_dist+est_threshold)*self.scaling),(est_dist+est_threshold)*2*self.scaling,(est_dist+est_threshold)*2*self.scaling),(angle_1-180)*(math.pi/180.),(angle_2+180)*(math.pi/180))
+            pygame.draw.arc(screen, pygame.Color('blue'), (self.center[0]-((est_dist-est_threshold)*self.scaling), model.height - (self.center[1])-((est_dist-est_threshold)*self.scaling),(est_dist-est_threshold)*2*self.scaling,(est_dist-est_threshold)*2*self.scaling),(angle_1-180)*(math.pi/180.),(angle_2+180)*(math.pi/180))
+        else:
+            pygame.draw.arc(screen, pygame.Color('blue'), (self.center[0]-((est_dist+est_threshold)*self.scaling), model.height - (self.center[1])-((est_dist+est_threshold)*self.scaling),(est_dist+est_threshold)*2*self.scaling,(est_dist+est_threshold)*2*self.scaling),(angle_1+180)*(math.pi/180.),(angle_2+180)*(math.pi/180))
+            pygame.draw.arc(screen, pygame.Color('blue'), (self.center[0]-((est_dist-est_threshold)*self.scaling), model.height - (self.center[1])-((est_dist-est_threshold)*self.scaling),(est_dist-est_threshold)*2*self.scaling,(est_dist-est_threshold)*2*self.scaling),(angle_1+180)*(math.pi/180.),(angle_2+180)*(math.pi/180))
 
         pygame.display.update()
 class LidarModel(object):
