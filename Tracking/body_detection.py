@@ -59,51 +59,106 @@ def non_max_suppression_fast(boxes, overlapThresh):
 	# integer data type
 	return boxes[pick].astype("int")
 
+
+def find_targets(people):
+	lidar_readings = {}
+	target_readings = {}
+	readings_list = []
+	targeted = []
+	threshold = 2
+	while len(lidar_readings) < 360:
+		angle, distance = get_lidar_reading()
+		lidar_readings[angle] = distance
+	for person in people:
+		for ang, dist in lidar_readings.items():
+			if ang > person[0] and ang < person[1]:
+				target_readings[ang] = dist
+		readings_list = target_readings.items()
+		readings_list = sorted(readings_list, key=lambda tup: tup[0])
+		count = -1
+		comparecount = 0
+		target = None
+		comparison = readings_list[0]
+		for angle, distance in readings_list:
+			if abs(distance - comparison[1]) < 2:
+				count += 1
+			else:
+				if count > comparecount:
+					comparecount = count
+					target = comparison
+				comparison = angle, distance
+				count = 0
+
+		targeted.append(target[0] + count/2, target[1])
+
+	return targeted
+
+
+
 if __name__ == "__main__":
 
-    winStride = (4,4)
-    padding = (16,16)
-    scale = 1.03
-    meanShift = False
+	winStride = (4,4)
+	padding = (16,16)
+	scale = 1.03
+	meanShift = False
 
-    cap = cv2.VideoCapture(0)
-    # fgbg = cv2.BackgroundSubtractorMOG()
+	cap = cv2.VideoCapture(0)
 
-    hog = cv2.HOGDescriptor()
-    hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
-    while(1):
+	hog = cv2.HOGDescriptor()
+	hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
-        ret, frame = cap.read()
-        frame = cv2.resize(frame, (320, 240))
+	history = []
+	people = []
+	targets = []
 
+	while True:
 
-        (rects, weights) = hog.detectMultiScale(frame, winStride=winStride,
-    	padding=padding, scale=scale, useMeanshiftGrouping=meanShift)
-
-        rects = non_max_suppression_fast(rects, 0.4)
-
-        for (x, y, w, h) in rects:
-        	cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+		ret, frame = cap.read()
+		frame = cv2.resize(frame, (320, 240))
 
 
-        cv2.namedWindow('frame', 0)
-        cv2.resizeWindow('frame', 320, 240)
+		(rects, weights) = hog.detectMultiScale(frame, winStride=winStride,
+		padding=padding, scale=scale, useMeanshiftGrouping=meanShift)
+
+		rects = non_max_suppression_fast(rects, 0.4)
+
+
+		if rects is None and len(history) > 0 and any(item is not None for item in history):
+			for i in range(len(history)-1, -1, -1):
+				if history[i] is not None:
+					for (x, y, w, h) in history[i]:
+						cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+						people.append((x * 57/640, (x + w) * 57/640))
+		else:
+			for (x, y, w, h) in rects:
+				cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+				people.append((x * 57/640, (x + w) * 57/640))
+
+		for person in people:
+			print person
+
+		targets = find_targets(people)
+		print targets
+
+		if len(history) < 10:
+			history.append(rects)
+		else:
+			history.pop(0)
+			history.append(rects)
+
+
+		cv2.namedWindow('frame', 0)
+		cv2.resizeWindow('frame', 320, 240)
+
+		cv2.imshow('frame',frame)
+
+		k = cv2.waitKey(30) & 0xff
+
+		if k == 27:
+
+			break
 
 
 
-        # fgmask = fgbg.apply(frame)
-
-
-
-        cv2.imshow('frame',frame)
-
-        k = cv2.waitKey(30) & 0xff
-
-        if k == 27:
-
-            break
-
-
-
-    cap.release()
-    cv2.destroyAllWindows()
+	cap.release()
+	cv2.destroyAllWindows()
