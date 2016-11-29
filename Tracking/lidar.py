@@ -20,17 +20,12 @@ ser.rtscts = False     #disable hardware (RTS/CTS) flow control
 ser.dsrdtr = False       #disable hardware (DSR/DTR) flow control
 ser.writeTimeout = 2     #timeout for write
 ser.open()
-inSync = False
 
+inSync = False
 sync = 0
 bytesRead = 0
 j = 0
-angle = 0
-distance = 0
 counter = 0
-angle = 0
-counter = 0
-insync = False
 dataReady = False
 dataArray = []
 
@@ -47,20 +42,7 @@ class LidarView(object):
         self.scaling = .3
     def draw(self, dataArray):
         self.screen.fill(pygame.Color('grey'))
-        angle = 500
-        repeatedAngles = 0
-        # for i, obj in enumerate(dataArray):
-            
-        #     if(angle == obj[0]):
-        #         repeatedAngles += 1
-        #         repeatedAngles = 0
-        #     elif(repeatedAngles > 0):
-        #         for j in range(0, repeatedAngles):
-        #             #print (1.0/(repeatedAngles+1))
-        #             dataArray[i-j] = (dataArray[i-j][0] - 1.0/(repeatedAngles+1), dataArray[i-j][1])
-        #             #print(dataArray[i-j])
-        #             repeatedAngles = 0
-        #     angle = obj[0]
+
         for i, obj in enumerate(dataArray):
             if obj != None:
                 if angle_1 > angle_2:
@@ -77,9 +59,9 @@ class LidarView(object):
                 x = int((obj[1]+3)*math.cos(obj[0]*math.pi/180)*self.scaling)
                 y = int((obj[1]+3)*math.sin(obj[0]*math.pi/180)*self.scaling)
                 if (obj[1] > (est_dist - est_threshold) and obj[1] < (est_dist + est_threshold) and dot_color==pygame.Color('green')):
-                    pygame.draw.circle(screen, pygame.Color('blue'), (self.center[0] - x, model.height -(self.center[1] - y)), 2)
+                    pygame.draw.circle(self.screen, pygame.Color('blue'), (self.center[0] - x, self.model.height -(self.center[1] - y)), 2)
                 else:
-                    pygame.draw.circle(screen, dot_color, (self.center[0] - x, model.height -(self.center[1] - y)), 2)
+                    pygame.draw.circle(self.screen, dot_color, (self.center[0] - x, self.model.height -(self.center[1] - y)), 2)
                 #print (x,y)
 
         line1_x_pos = int(1000*math.cos(angle_1*math.pi/180))
@@ -87,17 +69,17 @@ class LidarView(object):
         line2_x_pos = int(1000*math.cos(angle_2*math.pi/180))
         line2_y_pos = int(1000*math.sin(angle_2*math.pi/180))
 
-        pygame.draw.circle(screen, pygame.Color('yellow'), (self.center[0], model.height - (self.center[1])), 3)
+        pygame.draw.circle(self.screen, pygame.Color('yellow'), (self.center[0], self.model.height - (self.center[1])), 3)
 
-        pygame.draw.line(screen, pygame.Color('green'), (self.center[0], model.height - (self.center[1])),(self.center[0]-line1_x_pos, model.height - (self.center[1]-line1_y_pos)),1)
-        pygame.draw.line(screen, pygame.Color('green'), (self.center[0], model.height - (self.center[1])),(self.center[0]-line2_x_pos, model.height - (self.center[1]-line2_y_pos)),1)
+        pygame.draw.line(self.screen, pygame.Color('green'), (self.center[0], self.model.height - (self.center[1])),(self.center[0]-line1_x_pos, self.model.height - (self.center[1]-line1_y_pos)),1)
+        pygame.draw.line(self.screen, pygame.Color('green'), (self.center[0], self.model.height - (self.center[1])),(self.center[0]-line2_x_pos, self.model.height - (self.center[1]-line2_y_pos)),1)
 
         if angle_1>angle_2:
-            pygame.draw.arc(screen, pygame.Color('blue'), (self.center[0]-((est_dist+est_threshold)*self.scaling), model.height - (self.center[1])-((est_dist+est_threshold)*self.scaling),(est_dist+est_threshold)*2*self.scaling,(est_dist+est_threshold)*2*self.scaling),(angle_1-180)*(math.pi/180.),(angle_2+180)*(math.pi/180))
-            pygame.draw.arc(screen, pygame.Color('blue'), (self.center[0]-((est_dist-est_threshold)*self.scaling), model.height - (self.center[1])-((est_dist-est_threshold)*self.scaling),(est_dist-est_threshold)*2*self.scaling,(est_dist-est_threshold)*2*self.scaling),(angle_1-180)*(math.pi/180.),(angle_2+180)*(math.pi/180))
+            pygame.draw.arc(self.screen, pygame.Color('blue'), (self.center[0]-((est_dist+est_threshold)*self.scaling), self.model.height - (self.center[1])-((est_dist+est_threshold)*self.scaling),(est_dist+est_threshold)*2*self.scaling,(est_dist+est_threshold)*2*self.scaling),(angle_1-180)*(math.pi/180.),(angle_2+180)*(math.pi/180))
+            pygame.draw.arc(self.screen, pygame.Color('blue'), (self.center[0]-((est_dist-est_threshold)*self.scaling), self.model.height - (self.center[1])-((est_dist-est_threshold)*self.scaling),(est_dist-est_threshold)*2*self.scaling,(est_dist-est_threshold)*2*self.scaling),(angle_1-180)*(math.pi/180.),(angle_2+180)*(math.pi/180))
         else:
-            pygame.draw.arc(screen, pygame.Color('blue'), (self.center[0]-((est_dist+est_threshold)*self.scaling), model.height - (self.center[1])-((est_dist+est_threshold)*self.scaling),(est_dist+est_threshold)*2*self.scaling,(est_dist+est_threshold)*2*self.scaling),(angle_1+180)*(math.pi/180.),(angle_2+180)*(math.pi/180))
-            pygame.draw.arc(screen, pygame.Color('blue'), (self.center[0]-((est_dist-est_threshold)*self.scaling), model.height - (self.center[1])-((est_dist-est_threshold)*self.scaling),(est_dist-est_threshold)*2*self.scaling,(est_dist-est_threshold)*2*self.scaling),(angle_1+180)*(math.pi/180.),(angle_2+180)*(math.pi/180))
+            pygame.draw.arc(self.screen, pygame.Color('blue'), (self.center[0]-((est_dist+est_threshold)*self.scaling), self.model.height - (self.center[1])-((est_dist+est_threshold)*self.scaling),(est_dist+est_threshold)*2*self.scaling,(est_dist+est_threshold)*2*self.scaling),(angle_1+180)*(math.pi/180.),(angle_2+180)*(math.pi/180))
+            pygame.draw.arc(self.screen, pygame.Color('blue'), (self.center[0]-((est_dist-est_threshold)*self.scaling), self.model.height - (self.center[1])-((est_dist-est_threshold)*self.scaling),(est_dist-est_threshold)*2*self.scaling,(est_dist-est_threshold)*2*self.scaling),(angle_1+180)*(math.pi/180.),(angle_2+180)*(math.pi/180))
 
         pygame.display.update()
 class LidarModel(object):
@@ -121,13 +103,7 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT: sys.exit()
         bytesRead = ser.inWaiting()
-        #print bytesRead
-        #print bytesRead
-        #if(bytesRead > 0):
-        #print bytesRead
-        #for i, item in enumerate(data):
-        #    print(ord(item))
-            #print 'test'
+
         while(bytesRead > 1):
             bytesRead = ser.inWaiting()
             data = ser.read()
@@ -176,8 +152,8 @@ if __name__ == '__main__':
                     counter += 1
                     view.draw(dataArray)
                     dataArray = []
-       #if(sync == 4):
-        #print("headsads")
+        #if(sync == 4):
+            #print("headsads")
         crowd = Bodies.find_bodies()
 
         # Targeter.track(crowd)
