@@ -32,8 +32,6 @@ class BodyDetector(object):
 			self.history.append(self.people_ranges)
 		# print history
 
-		people = []
-
 		cv2.namedWindow('frame', 0)
 		cv2.resizeWindow('frame', 320, 240)
 
@@ -48,12 +46,12 @@ class BodyDetector(object):
 			#print "i'm in history"
 			for i in range(len(self.history)-1, -1, -1):
 				if len(self.history[i]) > 0:
-					hist = self.non_max_suppression_fast(self.history[i], 0.5)
+					hist = self.non_max_suppression_fast(self.history[i], 0.4)
 					for (x, y, w, h) in hist:
 						cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 					return hist
 		else:
-			rects = self.non_max_suppression_fast(rects, 0.5)
+			rects = self.non_max_suppression_fast(rects, 0.4)
 			for (x, y, w, h) in rects:
 				cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 			return rects
@@ -191,4 +189,6 @@ if __name__ == "__main__":
 		if k == 27:
 
 			break
-	Bodies.shut_down()
+	# Bodies.shut_down()
+	self.cam.release()
+	cv2.destroyAllWindows()
