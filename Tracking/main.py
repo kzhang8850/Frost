@@ -45,7 +45,6 @@ class SerialInput(object):
 		bytesRead = self.ser.inWaiting()
 		data = self.ser.read()
 		if(len(data) > 0):
-			#print(sync)
 			if ((ord(data) == 0xCC) and (self.sync == 0)) :
 				self.sync+=1
 			elif ((ord(data) == 0xDD) and (self.sync == 1)) :
@@ -113,10 +112,10 @@ if __name__ == '__main__':
 		#t.start()
 		#w.start()
 
-		k = cv2.waitKey(30) & 0xff
+		#k = cv2.waitKey(30) & 0xff
 
-		if k == 27:
-			break
+		#if k == 27:
+		#	break
 
 	ser.close()
 	Bodies.cam.release()

@@ -8,6 +8,7 @@ class Rooster(Thread):
         self.stop_event = stop
 
     def run(self):
+        print 'running'
         while not self.stop_event.is_set():
             if self.egg > 0:
                 self.queue.put((2, self.egg))

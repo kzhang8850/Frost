@@ -8,6 +8,7 @@ class Chicken(Thread):
         self.stop_event = stop
 
     def run(self):
+        print 'also running'
         while not self.stop_event.is_set():
             if self.chick < 10:
                 self.queue.put((1, self.chick))

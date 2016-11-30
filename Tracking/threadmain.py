@@ -23,7 +23,7 @@ while True:
     try:
         if not q.empty():
             data = q.get()
-            print data
+            #print data
     except KeyboardInterrupt:
         print "keyboard"
         thread1_stop.set()

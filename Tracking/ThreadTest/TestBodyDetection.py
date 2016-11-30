@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-
+from threading import Thread
 
 
 class BodyDetector(object):
@@ -10,13 +10,11 @@ class BodyDetector(object):
 		self.scale = 1.03
 		self.meanShift = False
 
-		self.cam = cv2.VideoCapture(0)
-		self.hog = cv2.HOGDescriptor()
+		#self.cam = cv2.VideoCapture(0)
+		#self.hog = cv2.HOGDescriptor()
 		self.history = []
 		self.people_ranges = []
-
-		self.hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
-
+		#.hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 	def find_bodies(self):
 		ret, frame = self.cam.read()
 		frame = cv2.resize(frame, (320, 240))
@@ -172,25 +170,31 @@ class TargetLocator(object):
 
 			self.targeted.append(target[0] + count/2, target[1])
 
-		return self.targeted
-"""
-
-if __name__ == "__main__":
+		return self.targeted"""
 
 
-	Bodies = BodyDetector()
-	#Targeter = TargetLocator()
+class BodyDetectorThread(Thread):
+    def __init__(self, queue, stop, bodies):
+        super(BodyDetectorThread, self).__init__()
+        self.queue = queue
+        self.stop_event = stop
+        self.bodies = bodies
 
+	def run(self):
+		print 'test'
+		while not self.stop_event.is_set():
+			self.bodies.find_bodies()
+			k = cv2.waitKey(30) & 0xff
+			if k == 27:
+				break
+		self.bodies.shut_down()
+
+if __name__ == '__main__':
+	bodies = BodyDetector()
 	while True:
-
-
-		crowd = Bodies.find_bodies()
-
-		# Targeter.track(crowd)
-
+		print 'test'
+		bodies.find_bodies()
 		k = cv2.waitKey(30) & 0xff
-
 		if k == 27:
-
 			break
-	Bodies.shut_down()
+	bodies.shut_down()
