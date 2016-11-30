@@ -1,8 +1,6 @@
 import numpy as np
 import cv2
 
-
-
 class BodyDetector(object):
 	def __init__(self):
 		self.winStride = (4,4)
