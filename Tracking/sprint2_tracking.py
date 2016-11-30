@@ -22,7 +22,7 @@ class Target:
         first = True
         # prev_time =  0
         # ser = serial.Serial(
-        #     port = '/dev/ttyACM0', 
+        #     port = '/dev/ttyACM0',
         #     baudrate = 115200,
         #     timeout = 3,
         # )
@@ -92,7 +92,7 @@ class Target:
                 #     r= r+1
                 #     prev_time = timer()
 
-                
+
                 #print("angle = " + str(i))
 
             """if (timer() - prev_time > .1):
