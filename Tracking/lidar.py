@@ -25,7 +25,7 @@ class LidarThread(Thread):
 
             self.lidar_data = self.lidar.get_reading()
             if self.lidar_data is not None:
-                self.queue.put(self.lidar_data)
+                self.queue.put((1, self.lidar_data))
 
         self.ser.close()
 

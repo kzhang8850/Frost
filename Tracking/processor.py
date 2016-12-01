@@ -11,9 +11,9 @@ import os
 
 class Supervisor(object):
     def __init__(self):
-        self.model.LidarModel()
-        self.screen = pygame.display.set_mode(model.size)
-        self.view = LidarView(screen, model)
+        self.model = LidarModel()
+        self.screen = pygame.display.set_mode(self.model.size)
+        self.view = LidarView(self.screen, self.model)
 
         self.targeter = TargetLocator()
 
@@ -86,24 +86,34 @@ class LidarModel(object):
 
 
 class TargetLocator(object):
-	def __init__(self):
-		self.people = []
-		self.targets = []
-		self.lidar_readings = {}
-		self.target_readings = {}
-		self.readings_list = []
-		self.targeted = []
-		self.threshold = 2
+    def __init__(self):
+        self.people = []
+        self.targets = []
+        self.lidar_readings = {}
+        self.target_readings = {}
+        self.readings_list = []
+        self.targeted = []
+        self.threshold = 2
+        self.kinectFOV = 57 #in degrees
+        self.kinectHeight = 240
+        self.kinectLength = 320
 
-	def track(self, crowd):
-		for (x, y, w, h) in crowd:
-			self.people.append((x * 57/640, (x + w) * 57/640))
+    def track(self, crowd):
+        if(len(crowd)> 0):
+            for (x, y, w, h) in crowd:
+                angleMin = ((self.kinectLength/2) - x)*(self.kinectFOV/2.0)
+                angleMax = ((self.kinectLength/2) - (x+w))*(self.kinectFOV/2.0)
+                self.people.append((angleMin, angleMax , abs(y -h)))
+                print abs(y-h)
+            return self.people
+        else:
+            return []
 
-		for person in self.people:
-			print person
+		# for person in self.people:
+		# 	print person
 
-		self.targets = self.find_targets()
-		print self.targets
+		# self.targets = self.find_targets()
+		# print self.targets
 
 
 	def find_targets(self):

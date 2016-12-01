@@ -12,11 +12,13 @@ class BodyThread(Thread):
 		self.queue = q
 		self.stop_event = stop
 		self.bodies = BodyDetector()
+		self.body_data = None
 
 	def run(self):
 		while not self.stop_event.is_set():
-			self.bodies.find_bodies()
-
+			self.body_data = self.bodies.find_bodies()
+			if self.body_data is not None:
+				self.queue.put((2, self.body_data))
 			k = cv2.waitKey(30) & 0xff
 
 			if k == 27:
@@ -30,15 +32,15 @@ class BodyThread(Thread):
 
 class BodyDetector(object):
 	def __init__(self):
-		self.winStride = (8,8)
+		self.winStride = (4,4)
 		self.padding = (16,16)
-		self.scale = 1.2
+		self.scale = 1.1
 		self.meanShift = False
 
 		self.cam = None
 
 		########TOGGLE THIS TO CHANGE VIDEO INPUT
-		self.cam = cv2.VideoCapture(0)
+		self.cam = cv2.VideoCapture()
 		self.hog = cv2.HOGDescriptor()
 		self.history = []
 		self.people_ranges = []
@@ -53,16 +55,16 @@ class BodyDetector(object):
 
 	def find_bodies(self):
 		########TOGGLE THESE TWO LINES TO CHANGE VIDEO INPUT
-		ret, frame = self.cam.read()
-		# frame = self.get_video()
+		#ret, frame = self.cam.read()
+		frame = self.get_video()
 
 		frame = cv2.resize(frame, (320, 240))
+		#frame = cv2.resize(frame, (600, 400))
 
 		(rects, weights) = self.hog.detectMultiScale(frame, winStride=self.winStride,
 		padding=self.padding, scale=self.scale, useMeanshiftGrouping=self.meanShift)
 
 		self.people_ranges = self.draw_rectangles(rects,frame)
-
 
 		if len(self.history) < 10:
 			self.history.append(self.people_ranges)
@@ -80,7 +82,6 @@ class BodyDetector(object):
 
 
 	def draw_rectangles(self,rects, frame):
-
 		if len(rects) == 0 and len(self.history) > 0 and any(len(item) > 0 for item in self.history):
 			#print "i'm in history"
 			for i in range(len(self.history)-1, -1, -1):

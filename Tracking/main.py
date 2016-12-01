@@ -46,13 +46,20 @@ thread1.start()
 thread2.start()
 
 
-
-
 while True:
     try:
-		if not q.empty():
-			xdata = q.get()
-			supervisor.view.draw(xdata)
+        if not q.empty():
+            xdata = q.get()
+            if xdata[0] == 1:
+                supervisor.view.draw(xdata[1])
+            else:
+                supervisor.targeter.track(xdata[1])
+                #print xdata[1]
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                os._exit() 
+                break
 
     except KeyboardInterrupt:
         print "keyboard"
