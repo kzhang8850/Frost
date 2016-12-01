@@ -1,13 +1,43 @@
 import numpy as np
 import cv2
+import freenect
+
+from threading import Thread
+
+
+
+class BodyThread(Thread):
+	def __init__(self, q, stop):
+		super(BodyThread, self).__init__()
+		self.queue = q
+		self.stop_event = stop
+		self.bodies = BodyDetector()
+
+	def run(self):
+		while not self.stop_event.is_set():
+			self.bodies.find_bodies()
+
+			k = cv2.waitKey(30) & 0xff
+
+			if k == 27:
+
+				break
+		self.bodies.shut_down()
+
+
+
+
 
 class BodyDetector(object):
 	def __init__(self):
-		self.winStride = (4,4)
+		self.winStride = (8,8)
 		self.padding = (16,16)
-		self.scale = 1.03
+		self.scale = 1.2
 		self.meanShift = False
 
+		self.cam = None
+
+		########TOGGLE THIS TO CHANGE VIDEO INPUT
 		self.cam = cv2.VideoCapture(0)
 		self.hog = cv2.HOGDescriptor()
 		self.history = []
@@ -15,8 +45,17 @@ class BodyDetector(object):
 
 		self.hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
+	def get_video(self):
+		array,_ = freenect.sync_get_video()
+		array = cv2.cvtColor(array,cv2.COLOR_RGB2BGR)
+		return array
+
+
 	def find_bodies(self):
+		########TOGGLE THESE TWO LINES TO CHANGE VIDEO INPUT
 		ret, frame = self.cam.read()
+		# frame = self.get_video()
+
 		frame = cv2.resize(frame, (320, 240))
 
 		(rects, weights) = self.hog.detectMultiScale(frame, winStride=self.winStride,
@@ -46,18 +85,19 @@ class BodyDetector(object):
 			#print "i'm in history"
 			for i in range(len(self.history)-1, -1, -1):
 				if len(self.history[i]) > 0:
-					hist = self.non_max_suppression_fast(self.history[i], 0.4)
+					hist = self.non_max_suppression_fast(self.history[i], 0.5)
 					for (x, y, w, h) in hist:
 						cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 					return hist
 		else:
-			rects = self.non_max_suppression_fast(rects, 0.4)
+			rects = self.non_max_suppression_fast(rects, 0.5)
 			for (x, y, w, h) in rects:
 				cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 			return rects
 
 	def shut_down(self):
-		self.cam.release()
+		if self.cam is None:
+			self.cam.release()
 		cv2.destroyAllWindows()
 
 
@@ -119,76 +159,22 @@ class BodyDetector(object):
 		return boxes[pick].astype("int")
 
 
-"""
-class TargetLocator(object):
-	def __init__(self):
-		self.people = []
-		self.targets = []
-		self.lidar_readings = {}
-		self.target_readings = {}
-		self.readings_list = []
-		self.targeted = []
-		self.threshold = 2
-
-	def track(self, crowd):
-		for (x, y, w, h) in crowd:
-			self.people.append((x * 57/640, (x + w) * 57/640))
-
-		for person in self.people:
-			print person
-
-		self.targets = self.find_targets()
-		print self.targets
 
 
-	def find_targets(self):
-
-		while len(self.lidar_readings) < 360:
-			angle, distance = get_lidar_reading()
-			self.lidar_readings[angle] = distance
-		for person in self.people:
-			for ang, dist in self.lidar_readings.items():
-				if ang > person[0] and ang < person[1]:
-					self.target_readings[ang] = dist
-			self.readings_list = self.target_readings.items()
-			self.readings_list = sorted(self.readings_list, key=lambda tup: tup[0])
-			count = -1
-			comparecount = 0
-			target = None
-			comparison = self.readings_list[0]
-			for angle, distance in self.readings_list:
-				if abs(distance - comparison[1]) < 2:
-					count += 1
-				else:
-					if count > comparecount:
-						comparecount = count
-						target = comparison
-					comparison = angle, distance
-					count = 0
-
-			self.targeted.append(target[0] + count/2, target[1])
-
-		return self.targeted
-"""
 
 if __name__ == "__main__":
 
 
 	Bodies = BodyDetector()
-	#Targeter = TargetLocator()
 
 	while True:
 
 
 		crowd = Bodies.find_bodies()
 
-		# Targeter.track(crowd)
-
 		k = cv2.waitKey(30) & 0xff
 
 		if k == 27:
 
 			break
-	# Bodies.shut_down()
-	self.cam.release()
-	cv2.destroyAllWindows()
+	Bodies.shut_down()
