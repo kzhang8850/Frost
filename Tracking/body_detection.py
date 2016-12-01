@@ -34,7 +34,7 @@ class BodyDetector(object):
 	def __init__(self):
 		self.winStride = (4,4)
 		self.padding = (16,16)
-		self.scale = 1.1
+		self.scale = 1.05
 		self.meanShift = False
 
 		self.cam = None

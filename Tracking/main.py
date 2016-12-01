@@ -44,16 +44,17 @@ thread2.setDaemon = True
 
 thread1.start()
 thread2.start()
-
+target_data = []
 
 while True:
     try:
         if not q.empty():
             xdata = q.get()
             if xdata[0] == 1:
-                supervisor.view.draw(xdata[1])
+                supervisor.view.draw(xdata[1], target_data)
             else:
-                supervisor.targeter.track(xdata[1])
+                target_data = supervisor.targeter.track(xdata[1])
+                #print target_data
                 #print xdata[1]
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
