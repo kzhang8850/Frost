@@ -30,7 +30,7 @@ float panEncoderValue;    //IN DEGREES
 float panOffset = 94.9 + 20; //IN DEGREES
 float panError = 0;  //IN DEGREES
 float panPGain = 10;
-float panDGain = 20;
+float panDGain = 0; //20;
 float panDerivative = 0;
 float panProportional = 0;
 int panDt = 50;
@@ -52,12 +52,13 @@ int Distance;
 //ARM VARIABLES
 int armPot = A1;
 float armEncoderValue;
-float armOffset = 85+18+5
-; //IN DEGREES
+float armOffset = 15; //IN DEGREES
 bool reset = false;
 bool fire = false;
 bool arm = false;
 int armTarget = 0;
+int counter = 0;
+int countSpeed = 0;
 
 String input;
 
@@ -80,11 +81,12 @@ void setup() {
     resetLauncher();
   }
   Serial.println("reset");
-
+  Serial.setTimeout(50);
 }
 
 void loop() {
-  Serial.setTimeout(50);
+  
+  //Serial.println(millis());
   getSensorData();
   if (Serial.available()) {
     getInput();
@@ -93,10 +95,13 @@ void loop() {
 
   if(reset && arm){
     armLauncher();
+    //Serial.println("arming");
   }
   if(fire && !arm){
     fireLauncher();
     panMotor->run(RELEASE);
+    
+    //Serial.println("firing");
     delay(1000);
     reset = false;
     fire = false;
@@ -104,13 +109,15 @@ void loop() {
   if(!reset){
     panTarget = 0;
     resetLauncher();
+    
+    //Serial.println("resetting");
   }
 }
 
 void getSensorData() {
 
   panEncoderValue = voltageToDegrees(analogRead(panPot)) - panOffset;
-  Serial.println(panEncoderValue);
+  //Serial.println(panEncoderValue);
   armEncoderValue = voltageToDegrees(analogRead(armPot)) - armOffset;
   //Serial.println(armEncoderValue);
 }
@@ -122,11 +129,11 @@ float voltageToDegrees(float voltage) {
 
 void pan() {
   //Turns target and current encoder value to power output
-  if (panTarget > 80) {
-    panTarget = 80;
+  if (panTarget > 60) {
+    panTarget = 60;
   }
-  if (panTarget < -80) {
-    panTarget = 80;
+  if (panTarget < -60) {
+    panTarget = 60;
   }
   if (millis() - prevTime > panDt) {
     int prevPanEncoderValue = panEncoderValue;
@@ -154,12 +161,25 @@ void pan() {
 }
 
 void turnpanMotor(int motorSpeed) {
+  if (counter > 0){
+    counter = 0;
+    if (countSpeed < motorSpeed){
+      countSpeed ++;
+    }
+    if(countSpeed > motorSpeed){
+      countSpeed --;
+    }else{
+      counter = 0
+    }
+  }else{
+    counter ++;
+  }
   //Rotates the motors
-  if (motorSpeed > 0) {
-    panMotor->setSpeed(motorSpeed);
+  if (countSpeed > 0) {
+    panMotor->setSpeed(countSpeed);
     panMotor->run(BACKWARD);
-  } else if (motorSpeed < 0) {
-    panMotor->setSpeed(abs(motorSpeed));
+  } else if (countSpeed < 0) {
+    panMotor->setSpeed(abs(countSpeed));
     panMotor->run(FORWARD);
   } else {
     panMotor ->run(RELEASE);
@@ -185,17 +205,22 @@ void turnArmMotors(int motorSpeed) {
 void getInput() {
     //INPUT IN FORMAT a = 20, power = 30
     input = Serial.readString();
-    if(input == "fire"){
+    
+    separator = input.indexOf(".");
+    if(separator != -1){
       fire = true;
       Serial.println("FIRING!");
     }
+//    if(input == "fire"){
+//      fire = true;
+//      Serial.println("FIRING!");
+//    }
     if(input == "reset"){
       fire = true;
       Serial.println("Resetting launcher");
     }
     len = input.length()+1;
     separator = input.indexOf(",");
-    
     if (separator != -1){
       string1 = input.substring(0, separator);
       string2 = input.substring(separator+1, len);
@@ -215,7 +240,6 @@ void getInput() {
         Serial.print("Angle set to: ");
         Serial.println(panTarget);
       }
-      
       separator = string2.indexOf("=");
       len = string2.length()+1;
       ID = string2.substring(0, separator);
@@ -233,19 +257,36 @@ void getInput() {
           Serial.println("Negative Power Given, try agan");
         }
       }
-    }   
+      }else{
+        separator = input.indexOf("=");
+        len = input.length()+1;
+        ID = input.substring(0, separator);
+        stringvalue = input.substring(separator+1,len);
+        stringvalue.trim();
+        value = stringvalue.toInt();
+        ID.trim();
+        if(ID == "a"){
+          panTarget = value;
+          Serial.print("Angle set to: ");
+          Serial.println(panTarget);
+        }
+      }
+      Serial.flush();
+
+      
+       
 
 }
 void armLauncher() {
-  if(armTarget > 50){
-    armTarget = 50;
+  if(armTarget > 60){
+    armTarget = 60;
   }
   if(armEncoderValue < armTarget){
     turnArmMotors(100);
   }
   else{
     arm = false;
-    turnArmMotors(10);
+    turnArmMotors(5);
   }
 }
 
@@ -263,7 +304,7 @@ void resetLauncher() {
 
 //Power Functions
 void activateLatch() {
-  latch.write(90);
+  latch.write(120);
 }
 
 void fireLauncher() {
