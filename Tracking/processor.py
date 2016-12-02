@@ -21,9 +21,9 @@ class SerialOut(object):
     def __init__(self, ser_out):
         self.ser_out = ser_out
         self.prev_time = time.time()
-        self.time_to_arm = 3
-        self.time_to_shoot = 6
-        self.time_to_send_angle = .2
+        self.time_to_arm = 6
+        self.time_to_shoot = 10
+        self.time_to_send_angle = .5
         self.prev_time_angle = time.time()
         self.arm_sent = False
         #self.fire_sent = False
@@ -31,10 +31,9 @@ class SerialOut(object):
     def send_serial(self, target_found, target_angle, target_distance):
         if not target_found:
             self.prev_time = time.time()
-            pass
         else:
             if(time.time() - self.prev_time_angle > self.time_to_send_angle):
-                self.ser_out.write("a = " + str(int(target_angle)))
+                self.ser_out.write("a = " + str(int(target_angle*1.15)))
                 self.prev_time_angle = time.time()
         if (time.time() - self.prev_time) > self.time_to_arm:
             if(not self.arm_sent):
@@ -43,8 +42,9 @@ class SerialOut(object):
                 self.ser_out.write("a= " + str(int(target_angle)) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
                 #self.ser_out.write("a= " + str(target_angle) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
                 print ("a= " + str(target_angle) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
+                self.ser_out.write(".")
         if(time.time() - self.prev_time) > self.time_to_shoot:
-            self.ser_out.write("fire")
+            #self.ser_out.write(".")
             #self.ser_out.write("fire")
             print ("fire")
             self.prev_time = time.time()
@@ -109,7 +109,7 @@ class LidarView(object):
                     if obj[1]<self.r_min:
                         self.r_min = obj[1]
         if self.target_found:
-            if self.r_min >2:
+            if self.r_min >5:
                 pygame.draw.circle(self.screen, pygame.Color('blue'), (self.center[0], self.model.height - (self.center[1])), int(self.r_min*self.scaling), 1)
 
                 # if (obj[1] > (self.est_dist - self.est_threshold) and obj[1] < (self.est_dist + self.est_threshold) and dot_color==pygame.Color('green')):

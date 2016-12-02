@@ -16,7 +16,7 @@ import processor
 
 #####Serial Stuff
 ser = serial.Serial()
-ser.port='/dev/ttyACM0'
+ser.port='/dev/ttyACM1'
 ser.baudrate=115200
 ser.parity=serial.PARITY_NONE
 
@@ -29,7 +29,7 @@ ser.open()
 
 ##for serial output to arduino
 ser_out = serial.Serial()
-ser_out.port='/dev/ttyACM1'
+ser_out.port='/dev/ttyACM0'
 ser_out.baudrate=115200
 ser_out.parity=serial.PARITY_NONE
 
@@ -37,7 +37,7 @@ ser_out.timeout = 1
 ser_out.xonxoff = False     #disable software flow control
 ser_out.rtscts = False     #disable hardware (RTS/CTS) flow control
 ser_out.dsrdtr = False       #disable hardware (DSR/DTR) flow control
-ser_out.writeTimeout = 2     #timeout for write
+ser_out.writeTimeout = 0     #timeout for write
 ser_out.open()
 
 
