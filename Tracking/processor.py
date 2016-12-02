@@ -22,7 +22,7 @@ class SerialOut(object):
         self.ser_out = ser_out
         self.prev_time = time.time()
         self.time_to_arm = 6
-        self.time_to_shoot = 10
+        self.time_to_shoot = 8
         self.time_to_send_angle = .5
         self.prev_time_angle = time.time()
         self.arm_sent = False
