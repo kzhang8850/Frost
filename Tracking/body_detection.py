@@ -66,11 +66,11 @@ class BodyDetector(object):
 
 		self.people_ranges = self.draw_rectangles(rects,frame)
 
-		if len(self.history) < 10:
-			self.history.append(self.people_ranges)
-		else:
-			self.history.pop(0)
-			self.history.append(self.people_ranges)
+		# if len(self.history) < 10:
+		# 	self.history.append(self.people_ranges)
+		# else:
+		# 	self.history.pop(0)
+		# 	self.history.append(self.people_ranges)
 		# print history
 
 		cv2.namedWindow('frame', 0)

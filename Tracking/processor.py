@@ -10,12 +10,48 @@ import os
 
 
 class Supervisor(object):
-    def __init__(self):
+    def __init__(self, ser_out):
         self.model = LidarModel()
         self.screen = pygame.display.set_mode(self.model.size)
         self.view = LidarView(self.screen, self.model)
-
+        self.serial_out = SerialOut(ser_out)
         self.targeter = TargetLocator()
+
+class SerialOut(object):
+    def __init__(self, ser_out):
+        self.ser_out = ser_out
+        self.prev_time = time.time()
+        self.time_to_arm = 3
+        self.time_to_shoot = 6
+        self.time_to_send_angle = .2
+        self.prev_time_angle = time.time()
+        self.arm_sent = False
+        #self.fire_sent = False
+
+    def send_serial(self, target_found, target_angle, target_distance):
+        if not target_found:
+            self.prev_time = time.time()
+            pass
+        else:
+            if(time.time() - self.prev_time_angle > self.time_to_send_angle):
+                self.ser_out.write("a = " + str(int(target_angle)))
+                self.prev_time_angle = time.time()
+        if (time.time() - self.prev_time) > self.time_to_arm:
+            if(not self.arm_sent):
+                self.arm_sent = True
+                #self.ser_out.write("a = 20, power = 10")
+                self.ser_out.write("a= " + str(int(target_angle)) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
+                #self.ser_out.write("a= " + str(target_angle) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
+                print ("a= " + str(target_angle) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
+        if(time.time() - self.prev_time) > self.time_to_shoot:
+            self.ser_out.write("fire")
+            #self.ser_out.write("fire")
+            print ("fire")
+            self.prev_time = time.time()
+            self.arm_sent = False
+    def distance_to_motor_power(self, distance):
+        return .1565*(distance - 9.09)
+
 
 
 
@@ -28,14 +64,21 @@ class LidarView(object):
 
         self.angle_1 = 340
         self.angle_2 = 70
+        self.target_angle = 0
         self.est_dist = 500
         self.est_threshold = 30
         self.r_min = 1000
+        self.target_found = False
     def draw(self, dataArray, target_data):
         if(len(target_data) > 0):
             self.angle_1 = target_data[0][0]
             self.angle_2 = target_data[0][1]
+            self.target_angle = (self.angle_1 + self.angle_2)/2
             self.est_dist = target_data[0][2]
+            self.target_found = True
+        else:
+            self.target_found = False
+
 
 
 
@@ -57,16 +100,17 @@ class LidarView(object):
                         dot_color = pygame.Color('green')
                     else:
                         dot_color = pygame.Color('red')
-
+                if not self.target_found:
+                    dot_color = pygame.Color('red')
                 x = int((obj[1]+3)*math.cos(obj[0]*math.pi/180)*self.scaling)
                 y = int((obj[1]+3)*math.sin(obj[0]*math.pi/180)*self.scaling)
-
                 pygame.draw.circle(self.screen, dot_color, (self.center[0] - x, self.model.height -(self.center[1] - y)), 2)
                 if (dot_color==pygame.Color('green')):
                     if obj[1]<self.r_min:
                         self.r_min = obj[1]
-        if self.r_min >1:
-            pygame.draw.circle(self.screen, pygame.Color('blue'), (self.center[0], self.model.height - (self.center[1])), int(self.r_min*self.scaling), 1)
+        if self.target_found:
+            if self.r_min >2:
+                pygame.draw.circle(self.screen, pygame.Color('blue'), (self.center[0], self.model.height - (self.center[1])), int(self.r_min*self.scaling), 1)
 
                 # if (obj[1] > (self.est_dist - self.est_threshold) and obj[1] < (self.est_dist + self.est_threshold) and dot_color==pygame.Color('green')):
                 #     pygame.draw.circle(self.screen, pygame.Color('blue'), (self.center[0] - x, self.model.height -(self.center[1] - y)), 2)
@@ -80,9 +124,9 @@ class LidarView(object):
         line2_y_pos = int(1000*math.sin(self.angle_2*math.pi/180))
 
         pygame.draw.circle(self.screen, pygame.Color('yellow'), (self.center[0], self.model.height - (self.center[1])), 3)
-
-        pygame.draw.line(self.screen, pygame.Color('green'), (self.center[0], self.model.height - (self.center[1])),(self.center[0]-line1_x_pos, self.model.height - (self.center[1]-line1_y_pos)),1)
-        pygame.draw.line(self.screen, pygame.Color('green'), (self.center[0], self.model.height - (self.center[1])),(self.center[0]-line2_x_pos, self.model.height - (self.center[1]-line2_y_pos)),1)
+        if self.target_found:
+            pygame.draw.line(self.screen, pygame.Color('green'), (self.center[0], self.model.height - (self.center[1])),(self.center[0]-line1_x_pos, self.model.height - (self.center[1]-line1_y_pos)),1)
+            pygame.draw.line(self.screen, pygame.Color('green'), (self.center[0], self.model.height - (self.center[1])),(self.center[0]-line2_x_pos, self.model.height - (self.center[1]-line2_y_pos)),1)
 
         # if self.angle_1>self.angle_2:
         #     pygame.draw.arc(self.screen, pygame.Color('blue'), (self.center[0]-((self.est_dist+self.est_threshold)*self.scaling), self.model.height - (self.center[1])-((self.est_dist+self.est_threshold)*self.scaling),(self.est_dist+self.est_threshold)*2*self.scaling,(self.est_dist+self.est_threshold)*2*self.scaling),(self.angle_1-180)*(math.pi/180.),(self.angle_2+180)*(math.pi/180))
@@ -92,6 +136,7 @@ class LidarView(object):
         #     pygame.draw.arc(self.screen, pygame.Color('blue'), (self.center[0]-((self.est_dist-self.est_threshold)*self.scaling), self.model.height - (self.center[1])-((self.est_dist-self.est_threshold)*self.scaling),(self.est_dist-self.est_threshold)*2*self.scaling,(self.est_dist-self.est_threshold)*2*self.scaling),(self.angle_1+180)*(math.pi/180.),(self.angle_2+180)*(math.pi/180))
 
         pygame.display.update()
+        return (self.target_found, -self.target_angle, self.r_min)
 
 
 class LidarModel(object):
