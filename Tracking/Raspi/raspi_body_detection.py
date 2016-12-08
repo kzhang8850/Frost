@@ -5,6 +5,7 @@ import freenect
 from threading import Thread
 
 
+
 class BodyThread(Thread):
 	"""
 	thread class for Kinect threading and communicating data
@@ -19,8 +20,10 @@ class BodyThread(Thread):
 	def run(self):
 		while not self.stop_event.is_set():
 			self.body_data = self.bodies.find_bodies()
+
 			if self.body_data is not None:
 				self.queue.put((2, self.body_data))
+
 			k = cv2.waitKey(30) & 0xff
 
 			if k == 27:
@@ -67,6 +70,7 @@ class BodyDetector(object):
 		frame = self.get_video()
 
 		frame = cv2.resize(frame, (320, 240))
+		#frame = cv2.resize(frame, (600, 400))
 
 		(rects, weights) = self.hog.detectMultiScale(frame, winStride=self.winStride,
 		padding=self.padding, scale=self.scale, useMeanshiftGrouping=self.meanShift)
@@ -81,14 +85,7 @@ class BodyDetector(object):
 		else:
 			self.history.pop(0)
 			self.history.append(self.people_ranges)
-		# print self.history
-
-
-		#draws frame
-		cv2.namedWindow('frame', 0)
-		cv2.resizeWindow('frame', 320, 240)
-
-		cv2.imshow('frame',frame)
+		# print history
 
 		return self.people_ranges
 
@@ -104,14 +101,9 @@ class BodyDetector(object):
 			for i in range(len(self.history)-1, -1, -1):
 				if len(self.history[i]) > 0:
 					hist = self.non_max_suppression_fast(self.history[i], 0.5)
-					for (x, y, w, h) in hist:
-						cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 					return hist
-
 		else:
 			rects = self.non_max_suppression_fast(rects, 0.5)
-			for (x, y, w, h) in rects:
-				cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 			return rects
 
 	def shut_down(self):

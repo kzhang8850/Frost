@@ -9,9 +9,9 @@ import sys
 import math
 import cv2
 import numpy as np
-import body_detection
-import lidar
-import processor
+import raspi_body_detection
+import raspi_lidar
+import raspi_processor
 
 
 class Frost(object):
@@ -23,6 +23,7 @@ class Frost(object):
 
         self.ser = None
         self.ser_out = None
+        self.ser2_out = None
         self.initialize_serial()
 
         self.supervisor = processor.Supervisor(ser_out)
@@ -77,6 +78,20 @@ class Frost(object):
         self.ser_out.dsrdtr = False       #disable hardware (DSR/DTR) flow control
         self.ser_out.writeTimeout = 0     #timeout for write
         self.ser_out.open()
+
+        ##for serial output to secondary computer for visualization
+        # self.ser2_out = serial.Serial()
+        # self.ser2_out.port='/dev/ttyACM2'
+        # self.ser2_out.baudrate=115200
+        # self.ser2_out.parity=serial.PARITY_NONE
+
+        # self.ser2_out.timeout = 1
+        # self.ser2_out.xonxoff = False     #disable software flow control
+        # self.ser2_out.rtscts = False     #disable hardware (RTS/CTS) flow control
+        # self.ser2_out.dsrdtr = False       #disable hardware (DSR/DTR) flow control
+        # self.ser2_out.writeTimeout = 0     #timeout for write
+        # self.ser2_out.open()
+
 
 
 
