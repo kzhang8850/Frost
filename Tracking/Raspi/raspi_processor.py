@@ -1,6 +1,5 @@
 import time
 import serial
-import binascii
 import pygame
 import sys
 import math

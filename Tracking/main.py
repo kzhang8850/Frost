@@ -25,12 +25,12 @@ class Frost(object):
         self.ser_out = None
         self.initialize_serial()
 
-        self.supervisor = processor.Supervisor(ser_out)
+        self.supervisor = processor.Supervisor(self.ser_out)
 
         self.thread1_stop = threading.Event()
         self.thread1 = body_detection.BodyThread(q, thread1_stop)
         self.thread2_stop = threading.Event()
-        self.thread2 = lidar.LidarThread(q, thread2_stop, ser)
+        self.thread2 = lidar.LidarThread(q, thread2_stop, self.ser)
 
         self.thread1.setDaemon = True
         self.thread2.setDaemon = True

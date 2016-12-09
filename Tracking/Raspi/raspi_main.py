@@ -26,12 +26,12 @@ class Frost(object):
         self.ser2_out = None
         self.initialize_serial()
 
-        self.supervisor = processor.Supervisor(ser_out)
+        self.supervisor = processor.Supervisor(self.ser_out)
 
         self.thread1_stop = threading.Event()
         self.thread1 = body_detection.BodyThread(q, thread1_stop)
         self.thread2_stop = threading.Event()
-        self.thread2 = lidar.LidarThread(q, thread2_stop, ser)
+        self.thread2 = lidar.LidarThread(q, thread2_stop, self.ser)
 
         self.thread1.setDaemon = True
         self.thread2.setDaemon = True
@@ -54,12 +54,12 @@ class Frost(object):
         """
 
         #for serial input from arduino for LIDAR
-        # self.ser = serial.Serial()
-        # self.ser.port='/dev/ttyACM0'
-        # self.ser.baudrate=115200
-        # self.ser.timeout = 1
-        # self.ser.write_timeout = 2     #timeout for write
-        # self.ser.open()
+        self.ser = serial.Serial()
+        self.ser.port='/dev/ttyACM0'
+        self.ser.baudrate=115200
+        self.ser.timeout = 1
+        self.ser.write_timeout = 2     #timeout for write
+        self.ser.open()
 
         #for self.serial output to arduino for launcher
         self.ser_out = serial.Serial()

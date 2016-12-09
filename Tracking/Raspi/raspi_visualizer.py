@@ -1,5 +1,4 @@
 import serial
-import binascii
 import sys
 import math
 import time

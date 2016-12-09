@@ -1,7 +1,6 @@
 import numpy as np
 import cv2
 import freenect
-
 from threading import Thread
 
 
@@ -87,8 +86,6 @@ class BodyDetector(object):
 				self.history.append(self.people_ranges)
 			else:
 				self.history.append([])
-		# print self.history
-
 
 		#draws frame
 		cv2.namedWindow('frame', 0)
