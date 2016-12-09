@@ -54,44 +54,28 @@ class Frost(object):
         """
 
         #for serial input from arduino for LIDAR
-        self.ser = serial.Serial()
-        self.ser.port='/dev/ttyACM0'
-        self.ser.baudrate=115200
-        self.ser.parity = serial.PARITY_NONE
-
-        self.ser.timeout = 1
-        self.ser.xonxoff = False     #disable software flow control
-        self.ser.rtscts = False     #disable hardware (RTS/CTS) flow control
-        self.ser.dsrdtr = False       #disable hardware (DSR/DTR) flow control
-        self.ser.writeTimeout = 2     #timeout for write
-        self.ser.open()
+        # self.ser = serial.Serial()
+        # self.ser.port='/dev/ttyACM0'
+        # self.ser.baudrate=115200
+        # self.ser.timeout = 1
+        # self.ser.write_timeout = 2     #timeout for write
+        # self.ser.open()
 
         #for self.serial output to arduino for launcher
         self.ser_out = serial.Serial()
         self.ser_out.port = '/dev/ttyACM1'
         self.ser_out.baudrate = 115200
-        self.ser_out.parity = serial.PARITY_NONE
-
         self.ser_out.timeout = 1
-        self.ser_out.xonxoff = False     #disable software flow control
-        self.ser_out.rtscts = False     #disable hardware (RTS/CTS) flow control
-        self.ser_out.dsrdtr = False       #disable hardware (DSR/DTR) flow control
-        self.ser_out.writeTimeout = 0     #timeout for write
+        self.ser_out.write_timeout = 0     #timeout for write
         self.ser_out.open()
 
-        ##for serial output to secondary computer for visualization
+        #for serial output to secondary computer for visualization
         # self.ser2_out = serial.Serial()
-        # self.ser2_out.port='/dev/ttyACM2'
+        # self.ser2_out.port='/dev/ttyACM0'
         # self.ser2_out.baudrate=115200
-        # self.ser2_out.parity=serial.PARITY_NONE
-
         # self.ser2_out.timeout = 1
-        # self.ser2_out.xonxoff = False     #disable software flow control
-        # self.ser2_out.rtscts = False     #disable hardware (RTS/CTS) flow control
-        # self.ser2_out.dsrdtr = False       #disable hardware (DSR/DTR) flow control
         # self.ser2_out.writeTimeout = 0     #timeout for write
         # self.ser2_out.open()
-
 
 
 

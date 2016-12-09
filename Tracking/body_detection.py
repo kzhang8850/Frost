@@ -42,7 +42,7 @@ class BodyDetector(object):
 		self.cam = None
 
 		########TOGGLE THIS TO CHANGE VIDEO INPUT
-		self.cam = cv2.VideoCapture()
+		# self.cam = cv2.VideoCapture()
 		self.hog = cv2.HOGDescriptor()
 		self.history = []
 		self.people_ranges = []
@@ -72,15 +72,21 @@ class BodyDetector(object):
 		padding=self.padding, scale=self.scale, useMeanshiftGrouping=self.meanShift)
 
 		#return a list of rectangles that tell where people are
-		self.people_ranges = self.draw_rectangles(rects,frame)
+		reality, self.people_ranges = self.draw_rectangles(rects,frame)
 
 
 		#updates history to help smooth over drops in frames
 		if len(self.history) < 10:
-			self.history.append(self.people_ranges)
+			if reality:
+				self.history.append(self.people_ranges)
+			else:
+				self.history.append([])
 		else:
 			self.history.pop(0)
-			self.history.append(self.people_ranges)
+			if reality:
+				self.history.append(self.people_ranges)
+			else:
+				self.history.append([])
 		# print self.history
 
 
@@ -106,13 +112,14 @@ class BodyDetector(object):
 					hist = self.non_max_suppression_fast(self.history[i], 0.5)
 					for (x, y, w, h) in hist:
 						cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-					return hist
+					return (0, hist)
+				return (0, [])
 
 		else:
 			rects = self.non_max_suppression_fast(rects, 0.5)
 			for (x, y, w, h) in rects:
 				cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-			return rects
+			return (1, rects)
 
 	def shut_down(self):
 		"""

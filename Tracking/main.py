@@ -56,12 +56,7 @@ class Frost(object):
         self.ser = serial.Serial()
         self.ser.port='/dev/ttyACM0'
         self.ser.baudrate=115200
-        self.ser.parity = serial.PARITY_NONE
-
         self.ser.timeout = 1
-        self.ser.xonxoff = False     #disable software flow control
-        self.ser.rtscts = False     #disable hardware (RTS/CTS) flow control
-        self.ser.dsrdtr = False       #disable hardware (DSR/DTR) flow control
         self.ser.writeTimeout = 2     #timeout for write
         self.ser.open()
 
@@ -69,12 +64,7 @@ class Frost(object):
         self.ser_out = serial.Serial()
         self.ser_out.port = '/dev/ttyACM1'
         self.ser_out.baudrate = 115200
-        self.ser_out.parity = serial.PARITY_NONE
-
         self.ser_out.timeout = 1
-        self.ser_out.xonxoff = False     #disable software flow control
-        self.ser_out.rtscts = False     #disable hardware (RTS/CTS) flow control
-        self.ser_out.dsrdtr = False       #disable hardware (DSR/DTR) flow control
         self.ser_out.writeTimeout = 0     #timeout for write
         self.ser_out.open()
 

@@ -148,12 +148,6 @@ class TargetLocator(object):
     """
     def __init__(self):
         self.people = []
-        self.targets = []
-        self.lidar_readings = {}
-        self.target_readings = {}
-        self.readings_list = []
-        self.targeted = []
-        self.threshold = 2
         self.kinectFOV = 57 #in degrees
         self.kinectHeight = 240.0
         self.kinectLength = 320.0

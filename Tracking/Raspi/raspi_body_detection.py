@@ -4,8 +4,6 @@ import freenect
 
 from threading import Thread
 
-
-
 class BodyThread(Thread):
 	"""
 	thread class for Kinect threading and communicating data
@@ -45,7 +43,7 @@ class BodyDetector(object):
 		self.cam = None
 
 		########TOGGLE THIS TO CHANGE VIDEO INPUT
-		self.cam = cv2.VideoCapture()
+		# self.cam = cv2.VideoCapture()
 		self.hog = cv2.HOGDescriptor()
 		self.history = []
 		self.people_ranges = []
@@ -70,27 +68,32 @@ class BodyDetector(object):
 		frame = self.get_video()
 
 		frame = cv2.resize(frame, (320, 240))
-		#frame = cv2.resize(frame, (600, 400))
 
 		(rects, weights) = self.hog.detectMultiScale(frame, winStride=self.winStride,
 		padding=self.padding, scale=self.scale, useMeanshiftGrouping=self.meanShift)
 
 		#return a list of rectangles that tell where people are
-		self.people_ranges = self.draw_rectangles(rects,frame)
+		reality, self.people_ranges = self.draw_rectangles(rects)
 
 
 		#updates history to help smooth over drops in frames
 		if len(self.history) < 10:
-			self.history.append(self.people_ranges)
+			if reality:
+				self.history.append(self.people_ranges)
+			else:
+				self.history.append([])
 		else:
 			self.history.pop(0)
-			self.history.append(self.people_ranges)
+			if reality:
+				self.history.append(self.people_ranges)
+			else:
+				self.history.append([])
 		# print history
 
-		return self.people_ranges
+		return frame, self.people_ranges
 
 
-	def draw_rectangles(self,rects, frame):
+	def draw_rectangles(self,rects):
 		"""
 		draws rectangles in frame where people are, can use history or new rectangles depending on dropped frames
 		"""
@@ -101,10 +104,12 @@ class BodyDetector(object):
 			for i in range(len(self.history)-1, -1, -1):
 				if len(self.history[i]) > 0:
 					hist = self.non_max_suppression_fast(self.history[i], 0.5)
-					return hist
+					return (0, hist)
+				return (0, [])
+
 		else:
 			rects = self.non_max_suppression_fast(rects, 0.5)
-			return rects
+			return (1, rects)
 
 	def shut_down(self):
 		"""
@@ -182,7 +187,12 @@ if __name__ == "__main__":
 	while True:
 
 
-		crowd = Bodies.find_bodies()
+		frame, crowd = Bodies.find_bodies()
+
+
+		print crowd
+
+
 
 		k = cv2.waitKey(30) & 0xff
 
