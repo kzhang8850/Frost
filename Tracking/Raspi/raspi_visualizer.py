@@ -5,6 +5,7 @@ import time
 from threading import Thread
 import cv2
 import pygame
+import urllib
 
 
 class RaspiVisuals(object):
@@ -21,17 +22,16 @@ class RaspiVisuals(object):
 
 		self.camera = KinectVisualizer()
 
-		self.ser2 = serial.Serial()
-		self.ser2.port = '/dev/ttyACM0'
-		self.ser2.baudrate = 115200
-		self.ser2.timeout = 1
-		self.ser2.open()
+		self.link = "http://0.0.0.0:8080/"
+		
+		self.raw_data = None
+		self.formatted_data = None
 
 		self.data = None
 		self.target_data = []
   
 	def visualize(self):
-		self.data = self.ser2.read()
+		self.data = self.get_data()
 		if self.data[0] == 1:
 			self.view.draw(self.data[1], self.target_data)
 		else:
@@ -41,6 +41,16 @@ class RaspiVisuals(object):
 	def shut_down(self):
 		cv2.destroyAllWindows()
 		self.ser2_out.close()
+
+	def get_data(self):
+
+		self.f = urllib.urlopen(self.link)
+		self.raw_data = self.f.read()
+
+		self.formatted_data = self.raw_data.split(" ")
+
+		return self.formatted_data
+
 
 
 
@@ -218,7 +228,10 @@ if __name__== "__main__":
 	pictures = RaspiVisuals()
 
 	while True:
-		pictures.visualize()
+		# pictures.visualize()
+
+		print pictures.get_data()
+
 
 	pictures.shut_down()
 
