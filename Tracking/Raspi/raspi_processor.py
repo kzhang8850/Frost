@@ -31,7 +31,7 @@ class SerialOut(object):
         self.arm_sent = False
 
     def send_serial(self, target_found, target_angle, target_distance):
-         """
+        """
         send serial data after set intervals of time
         send angle of target and the distance needed to hit them, given in launcher's specs
         """
