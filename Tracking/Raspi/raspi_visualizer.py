@@ -1,80 +1,57 @@
-import time
 import serial
-import pygame
 import sys
 import math
+import time
+from threading import Thread
 import cv2
-import numpy as np
-import os
+import pygame
+import urllib
 
 
-class Supervisor(object):
-    """
-    main class - instantiates all processing classes for LIDAR, Kinect, and SerialOut
-    """
-    def __init__(self, ser_out):
-        self.model = LidarModel()
-        self.screen = pygame.display.set_mode(self.model.size)
-        self.view = LidarView(self.screen, self.model)
-        self.serial_out = SerialOut(ser_out)
-        self.targeter = TargetLocator()
+class RaspiVisuals(object):
+	"""
+	class whose sole purpose is to allow for visualizations for Raspi data, since Raspi isn't
+	fast eonugh to do it itself. 
+
+	***This file should be run on a separate computer, with a serial connection to the Raspi***
+	"""
+	def __init__(self):
+		self.model = LidarModel()
+		self.screen = pygame.display.set_mode(self.model.size)
+		self.view = LidarView(self.screen, self.model)
+
+		self.camera = KinectVisualizer()
+
+		self.link = "http://0.0.0.0:8080/"
+		
+		self.raw_data = None
+		self.formatted_data = None
+
+		self.data = None
+		self.target_data = []
+  
+	def visualize(self):
+		self.data = self.get_data()
+		if self.data[0] == 1:
+			self.view.draw(self.data[1], self.target_data)
+		else:
+			self.target_data = self.camera.track(self.data[1])
+			self.camera.render(self.data[1])
+
+	def shut_down(self):
+		cv2.destroyAllWindows()
+		self.ser2_out.close()
+
+	def get_data(self):
+
+		self.f = urllib.urlopen(self.link)
+		self.raw_data = self.f.read()
+
+		self.formatted_data = self.raw_data.split(" ")
+
+		return self.formatted_data
 
 
-class SerialOut(object):
-    """
-    class that holds processing to push output data to the launcher for panning and shooting a set distance
-    """
-    def __init__(self, ser_out):
-        self.ser_out = ser_out
-        self.prev_time = time.time()
-        self.time_to_arm = 6
-        self.time_to_shoot = 8
-        self.time_to_send_angle = .5
-        self.prev_time_angle = time.time()
-        self.arm_sent = False
-
-
-    def send_serial(self, target_found, target_angle, target_distance):
-        """
-        send serial data after set intervals of time
-        send angle of target and the distance needed to hit them, given in launcher's specs
-        """
-
-        #if there is no target, then loops over
-        if not target_found:
-            self.prev_time = time.time()
-            pass
-        else:
-
-            #if enough time has passed, send an angle
-            if(time.time() - self.prev_time_angle > self.time_to_send_angle):
-                self.ser_out.write("a = " + str(int(target_angle*1.15)))
-                self.prev_time_angle = time.time()
-
-            #if enough time has passed, send an angle and a distance to arm the launcher
-            if (time.time() - self.prev_time) > self.time_to_arm:
-                if(not self.arm_sent):
-                    self.arm_sent = True
-                    #self.ser_out.write("a = 20, power = 10")
-                    self.ser_out.write("a= " + str(int(target_angle)) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
-                    #self.ser_out.write("a= " + str(target_angle) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
-                    print ("a= " + str(target_angle) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
-                    self.ser_out.write(".")
-
-            #if enough time has passed, send a command to fire
-            if(time.time() - self.prev_time) > self.time_to_shoot:
-                # self.ser_out.write(".")
-                # self.ser_out.write("fire")
-                print ("fire")
-                self.prev_time = time.time()
-                self.arm_sent = False
-
-
-    def distance_to_motor_power(self, distance):
-        """
-        performs a conversion to get distance into launcher specs
-        """
-        return .1565*(distance - 9.09)
 
 
 
@@ -196,33 +173,65 @@ class LidarModel(object):
         self.size = (self.width, self.height)
 
 
-class TargetLocator(object):
-    """
-    holds the processing of the Kinect data to find targets
-    """
-    def __init__(self):
-        self.people = []
-        self.kinectFOV = 57 #in degrees
-        self.kinectHeight = 240.0
-        self.kinectLength = 320.0
 
-    def track(self, crowd):
-        """
-        uses the rectangles drawn around targets to find the angle range they lie in
-        """
-        if(len(crowd)> 0):
-            self.people = []
-            for (x, y, w, h) in crowd:
-                #print (x, x+w)
-                angleMax = (self.kinectLength/2 - x)/(self.kinectLength)*self.kinectFOV
-                angleMin = (self.kinectLength/2 - (x+w))/(self.kinectLength)*self.kinectFOV
-                self.people.append((angleMin, angleMax , self.get_distance_estimate(abs(y-h))))
-            #print self.people
-            return self.people
-        else:
-            return []
+class KinectVisualizer(object):
+	"""
+	the class that draws the frames from the Raspi
+	"""
+	def __init__(self):
+		self.frame = None
+		self.targets = None
+
+		self.people = []
+		self.kinectFOV = 57 #in degrees
+		self.kinectHeight = 240.0
+		self.kinectLength = 320.0
 
 
-    def get_distance_estimate(self, height):
-        return -.19012*height + 542.5
+	def render(self, data):
+		"""
+		draws the rectangles onto the frame, and then shows it
+		"""
+		self.frame = data[0]
+		self.targets = data[1]
+		for (x,y,w,h) in self.targets:
+			cv2.rectangle(self.frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+		cv2.namedWindow('frame', 0)
+		cv2.resizeWindow('frame', 320, 240)
+
+		cv2.imshow('frame',self.frame)
+
+
+	def track(self, data):
+		"""
+		uses the rectangles drawn around targets to find the angle range they lie in
+		"""
+		self.targets = data[1]
+		if(len(self.targets)> 0):
+			self.people = []
+			for (x, y, w, h) in self.targets:
+				angleMax = (self.kinectLength/2 - x)/(self.kinectLength)*self.kinectFOV
+				angleMin = (self.kinectLength/2 - (x+w))/(self.kinectLength)*self.kinectFOV
+				self.people.append((angleMin, angleMax , self.get_distance_estimate(abs(y-h))))
+				#print self.people
+			return self.people
+		else:
+			return []
+
+	def get_distance_estimate(self, height):
+		return -.19012*height + 542.5		
+
+
+
+if __name__== "__main__":
+	pictures = RaspiVisuals()
+
+	while True:
+		# pictures.visualize()
+
+		print pictures.get_data()
+
+
+	pictures.shut_down()
 
