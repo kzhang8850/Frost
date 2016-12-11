@@ -1,4 +1,4 @@
-import threading
+import multiprocessing
 import Queue
 import os
 import time
@@ -19,7 +19,7 @@ class Frost(object):
     the main class of Frost, our snowball launcher
     """
     def __init__(self):
-        self.q = Queue.Queue()
+        self.q = multiprocessing.Queue()
 
         self.ser = None
         self.ser_out = None
@@ -28,13 +28,8 @@ class Frost(object):
 
         self.supervisor = processor.Supervisor(self.ser_out)
 
-        self.thread1_stop = threading.Event()
-        self.thread1 = body_detection.BodyThread(q, thread1_stop)
-        self.thread2_stop = threading.Event()
-        self.thread2 = lidar.LidarThread(q, thread2_stop, self.ser)
-
-        self.thread1.setDaemon = True
-        self.thread2.setDaemon = True
+        self.thread1 = body_detection.BodyThread(self.q)
+        self.thread2 = lidar.LidarThread(self.q, self.ser)
 
         self.thread1.start()
         self.thread2.start()
@@ -104,11 +99,10 @@ class Frost(object):
 
             except KeyboardInterrupt:
                 print "keyboard"
-                thread1_stop.set()
-                thread2_stop.set()
+                self.thread1.terminate()
+                self.thread2.terminate()
 
                 break
-        sys.exit()
 
 
 if __name__ == "__main__":
