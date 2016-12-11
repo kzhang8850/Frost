@@ -3300,7 +3300,7 @@
 	#banner {
 		background-attachment: scroll,							fixed;
 		background-color: #666;
-		background-image: url("images/overlay.png"), url("../../images/Prototype_CAD.png");
+		background-image: url("images/overlay.png"), url("../../images/Prototype/Prototype_CAD.png");
 		background-position: top left,						center center;
 		background-repeat: repeat,							no-repeat;
 		background-size: auto,							cover;
@@ -3387,7 +3387,7 @@
 			}
 
 	body.landing #main {
-		margin-top: -14em;
+		margin-top: 0em;
 	}
 
 /* Footer */

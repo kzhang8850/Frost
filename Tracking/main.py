@@ -60,7 +60,7 @@ thread1.setDaemon = True
 thread2.setDaemon = True
 #thread3.setDaemon = True
 
-thread1.start()
+#thread1.start()
 thread2.start()
 #thread3.start()
 

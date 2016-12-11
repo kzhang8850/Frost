@@ -37,7 +37,11 @@
 			$('#nav > ul').dropotron({
 				alignment: 'right'
 			});
-
+        
+        // Scrolly.
+			$('.scrolly').scrolly({
+				speed: 1500
+            });
 		// Off-Canvas Navigation.
 
 			// Navigation Button.
