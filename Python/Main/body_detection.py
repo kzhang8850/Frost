@@ -1,3 +1,16 @@
+#################################################################################################################################
+"""
+Body Detection Module - Acts as Frost's Eyes
+
+Establishes a connection to a USB Camera, in this case a XBox Kinect's RGB Camera
+Receives frames from Kinect and utilizes machine learning classifiers and smoothing algorithms to find and track people
+Displays a live feed of the camera with people bounded in green boxes
+
+Written by Kevin Zhang 
+"""
+################################################################################################################################
+
+
 import numpy as np
 import cv2
 import freenect
@@ -31,6 +44,7 @@ class BodyDetector(object):
 	main class for Kinect's computer vision, finds and tracks bodies within field of vision
 	"""
 	def __init__(self):
+		#parameters for tuning speed vs performance
 		self.winStride = (4,4)
 		self.padding = (16,16)
 		self.scale = 1.03
@@ -41,7 +55,9 @@ class BodyDetector(object):
 		########TOGGLE THIS TO CHANGE VIDEO INPUT
 		# self.cam = cv2.VideoCapture()
 		self.hog = cv2.HOGDescriptor()
-		self.history = []
+
+		#variables for tracking people
+		self.history = [] #maintains a rectangle in occasional dropped frames
 		self.people_ranges = []
 
 		self.hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
@@ -66,6 +82,7 @@ class BodyDetector(object):
 
 		frame = cv2.resize(frame, (320, 240))
 
+		#finds people
 		(rects, weights) = self.hog.detectMultiScale(frame, winStride=self.winStride,
 		padding=self.padding, scale=self.scale, useMeanshiftGrouping=self.meanShift)
 
@@ -77,13 +94,11 @@ class BodyDetector(object):
 			if reality:
 				self.history.append(self.people_ranges)
 			else:
-				self.history.append([])
+				self.history.pop(0)
 		else:
 			self.history.pop(0)
 			if reality:
 				self.history.append(self.people_ranges)
-			else:
-				self.history.append([])
 
 		#draws frame
 		cv2.namedWindow('frame', 0)
@@ -98,20 +113,18 @@ class BodyDetector(object):
 		"""
 		draws rectangles in frame where people are, can use history or new rectangles depending on dropped frames
 		"""
-
 		#if current rects has no rects, then look through history, and if there was a very recent rectangle, then use that rectangle
 		if len(rects) == 0 and len(self.history) > 0 and any(len(item) > 0 for item in self.history):
-			#print "i'm in history"
 			for i in range(len(self.history)-1, -1, -1):
 				if len(self.history[i]) > 0:
-					hist = self.non_max_suppression_fast(self.history[i], 0.3)
+					hist = self.non_max_suppression_fast(self.history[i], .3)
 					for (x, y, w, h) in hist:
 						cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 					return (0, hist)
 				return (0, [])
 
 		else:
-			rects = self.non_max_suppression_fast(rects, 0.3)
+			rects = self.non_max_suppression_fast(rects, .3)
 			for (x, y, w, h) in rects:
 				cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 			return (1, rects)
@@ -128,14 +141,16 @@ class BodyDetector(object):
 
 	# Malisiewicz et al.
 	def non_max_suppression_fast(self,boxes, overlapThresh):
+		"""
+		smooths out tracking by removing extraneous rectangles
+		"""
 		# if there are no boxes, return an empty list
 		if len(boxes) == 0:
 			return []
 
 		# if the bounding boxes integers, convert them to floats --
 		# this is important since we'll be doing a bunch of divisions
-		if boxes.dtype.kind == "i":
-			boxes = boxes.astype("float")
+		boxes = boxes.astype("float")
 
 		# initialize the list of picked indexes
 		pick = []
@@ -143,8 +158,8 @@ class BodyDetector(object):
 		# grab the coordinates of the bounding boxes
 		x1 = boxes[:,0]
 		y1 = boxes[:,1]
-		x2 = boxes[:,2]
-		y2 = boxes[:,3]
+		x2 = boxes[:,0] + boxes[:,2]
+		y2 = boxes[:,1] + boxes[:,3]
 
 		# compute the area of the bounding boxes and sort the bounding
 		# boxes by the bottom-right y-coordinate of the bounding box

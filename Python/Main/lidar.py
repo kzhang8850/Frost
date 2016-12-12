@@ -1,3 +1,15 @@
+#################################################################################################################################
+"""
+LIDAR Module - Acts as Frost's Depth Perception
+
+Establishes a connection to the LIDAR sensor's Arduino
+Receives data from said Arduino and then parses it into usable form, namely hexadeicmal to angles and distances
+
+Written by Cedric Kim
+"""
+################################################################################################################################
+
+
 import time
 import serial
 import sys
@@ -48,6 +60,7 @@ class Lidar(object):
         self.angle = 0
         self.distance = 0
 
+
     def get_reading(self):
         """
         reads data from LIDAR's serial port and parses it into meaningful data
@@ -56,7 +69,6 @@ class Lidar(object):
         data = self.ser.read()
         
         if(len(data) > 0):
-            #print(sync)
             if ((ord(data) == 0xCC) and (self.sync == 0)) :
                 self.sync+=1
             elif ((ord(data) == 0xDD) and (self.sync == 1)) :
@@ -68,17 +80,12 @@ class Lidar(object):
             else:
                 self.sync = 0
 
-            #print(inSync)
             if(self.inSync):
                 if(self.j == 0):
-                    #print("HighBit:")
-                    #print(ord(data)<<8)
                     self.tempAngle = ord(data) << 8
                     self.j += 1
                     self.dataReady = False
                 elif(self.j == 1):
-                    #print("LowBit:")
-                    #print(ord(data))
                     self.angle = self.tempAngle + ord(data)
                     self.j += 1
                     self.dataReady = False
@@ -92,8 +99,6 @@ class Lidar(object):
                     self.dataReady = True
                 if(self.sync == 0 and self.dataReady):
                     self.dataArray.append((self.angle, self.distance))
-                    #print(angle , distance)
-                    #time.sleep()
 
             if (self.sync == 4):
                 self.inSync = True

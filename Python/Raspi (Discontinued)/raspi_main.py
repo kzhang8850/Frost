@@ -1,3 +1,25 @@
+#################################################################################################################################
+"""
+Raspi Main Module - Acts as Frost's Brain
+
+An Attempt to convert our working code base onto a Raspberry Pi
+Performs the same functions as the original Main Module except that it trades some accuracy for additional speed
+
+
+************************************************************ARCHIVED*************************************************************
+- Determined that the Raspberry Pi's computational power is not enough for all our algorithms, even under best conditions
+still too slow
+- The amount of hardware used by this project overloads the Raspberry Pi and causes too under voltage warnings from too much 
+current draw. 
+
+We stopped the exploration mainly due to this for fear of damaging the Raspberry Pi or lack of sufficient computatinal power
+Stopped as of 12/9/16
+
+Written by Kevin Zhang
+"""
+################################################################################################################################
+
+
 import multiprocessing
 import Queue
 import os
@@ -9,9 +31,9 @@ import sys
 import math
 import cv2
 import numpy as np
-import body_detection
-import lidar
-import processor
+import raspi_body_detection
+import raspi_lidar
+import raspi_processor
 
 
 class Frost(object):
@@ -23,12 +45,13 @@ class Frost(object):
 
         self.ser = None
         self.ser_out = None
+        self.ser2_out = None
         self.initialize_serial()
 
-        self.supervisor = processor.Supervisor(self.ser_out)
+        self.supervisor = raspi_processor.Supervisor(self.ser_out)
 
-        self.thread1 = body_detection.BodyThread(self.q)
-        self.thread2 = lidar.LidarThread(self.q, self.ser)
+        self.thread1 = raspi_body_detection.BodyThread(self.q)
+        self.thread2 = raspi_lidar.LidarThread(self.q, self.ser)
 
         self.thread1.start()
         self.thread2.start()
@@ -41,6 +64,7 @@ class Frost(object):
         self.xdata = None
 
 
+
     def initialize_serial(self):
         """
         Serial stuff
@@ -51,7 +75,7 @@ class Frost(object):
         self.ser.port='/dev/ttyACM0'
         self.ser.baudrate=115200
         self.ser.timeout = 1
-        self.ser.writeTimeout = 2     #timeout for write
+        self.ser.write_timeout = 2     #timeout for write
         self.ser.open()
 
         #for self.serial output to arduino for launcher
@@ -59,13 +83,22 @@ class Frost(object):
         self.ser_out.port = '/dev/ttyACM1'
         self.ser_out.baudrate = 115200
         self.ser_out.timeout = 1
-        self.ser_out.writeTimeout = 0     #timeout for write
+        self.ser_out.write_timeout = 0     #timeout for write
         self.ser_out.open()
+
+        #for serial output to secondary computer for visualization
+        # self.ser2_out = serial.Serial()
+        # self.ser2_out.port='/dev/ttyACM0'
+        # self.ser2_out.baudrate=115200
+        # self.ser2_out.timeout = 1
+        # self.ser2_out.writeTimeout = 0     #timeout for write
+        # self.ser2_out.open()
+
 
 
     def run(self):
         """
-        runs the threading and the processes for Frost's Kinect vision, LIDAR, and launching
+        runs the multiprocessing for Frost's Kinect vision, LIDAR, and launching
         """
 
         while True:
@@ -76,20 +109,14 @@ class Frost(object):
                     if self.xdata[0] == 1:
                         (self.target_found, self.target_angle, self.target_distance) = self.supervisor.view.draw(self.xdata[1], self.target_data)
                     else:
-                        self.target_data = self.supervisor.targeter.track(self.xdata[1])
+                        self.target_data = self.supervisor.targeter.track(self.xdata[1][1])
                     self.supervisor.serial_out.send_serial(self.target_found, self.target_angle, self.target_distance)
-
-                #shuwdown sequence for pygame    
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        pygame.quit()
-                        sys._exit() 
-                        break
 
             except KeyboardInterrupt:
                 print "keyboard"
                 self.thread1.terminate()
                 self.thread2.terminate()
+
 
                 break
 
