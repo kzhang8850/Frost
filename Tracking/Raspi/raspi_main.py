@@ -26,12 +26,12 @@ class Frost(object):
         self.ser2_out = None
         self.initialize_serial()
 
-        self.supervisor = processor.Supervisor(self.ser_out)
+        self.supervisor = raspi_processor.Supervisor(self.ser_out)
 
         self.thread1_stop = threading.Event()
-        self.thread1 = body_detection.BodyThread(q, thread1_stop)
+        self.thread1 = raspi_body_detection.BodyThread(self.q, self.thread1_stop)
         self.thread2_stop = threading.Event()
-        self.thread2 = lidar.LidarThread(q, thread2_stop, self.ser)
+        self.thread2 = raspi_lidar.LidarThread(self.q, self.thread2_stop, self.ser)
 
         self.thread1.setDaemon = True
         self.thread2.setDaemon = True
@@ -55,7 +55,7 @@ class Frost(object):
 
         #for serial input from arduino for LIDAR
         self.ser = serial.Serial()
-        self.ser.port='/dev/ttyACM0'
+        self.ser.port='/dev/ttyACM3'
         self.ser.baudrate=115200
         self.ser.timeout = 1
         self.ser.write_timeout = 2     #timeout for write
@@ -63,7 +63,7 @@ class Frost(object):
 
         #for self.serial output to arduino for launcher
         self.ser_out = serial.Serial()
-        self.ser_out.port = '/dev/ttyACM1'
+        self.ser_out.port = '/dev/ttyACM2'
         self.ser_out.baudrate = 115200
         self.ser_out.timeout = 1
         self.ser_out.write_timeout = 0     #timeout for write
@@ -92,23 +92,15 @@ class Frost(object):
                     if self.xdata[0] == 1:
                         (self.target_found, self.target_angle, self.target_distance) = self.supervisor.view.draw(self.xdata[1], self.target_data)
                     else:
-                        self.target_data = self.supervisor.targeter.track(self.xdata[1])
+                        self.target_data = self.supervisor.targeter.track(self.xdata[1][1])
                     self.supervisor.serial_out.send_serial(self.target_found, self.target_angle, self.target_distance)
-
-                #shuwdown sequence for pygame    
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        pygame.quit()
-                        sys._exit() 
-                        break
 
             except KeyboardInterrupt:
                 print "keyboard"
-                thread1_stop.set()
-                thread2_stop.set()
+                self.thread1_stop.set()
+                self.thread2_stop.set()
 
                 break
-        sys.exit()
 
 
 if __name__ == "__main__":
