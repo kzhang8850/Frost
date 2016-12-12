@@ -1,21 +1,20 @@
 import numpy as np
 import cv2
 import freenect
-from threading import Thread
+from multiprocessing import Process
 
-class BodyThread(Thread):
+class BodyThread(Process):
 	"""
-	thread class for Kinect threading and communicating data
+	multiprocessing class for Kinect multiprocessing and communicating data
 	"""
-	def __init__(self, q, stop):
+	def __init__(self, q):
 		super(BodyThread, self).__init__()
 		self.queue = q
-		self.stop_event = stop
 		self.bodies = BodyDetector()
 		self.body_data = None
 
 	def run(self):
-		while not self.stop_event.is_set():
+		while True:
 			self.body_data = self.bodies.find_bodies()
 
 			if self.body_data is not None:
@@ -34,9 +33,9 @@ class BodyDetector(object):
 	main class for Kinect's computer vision, finds and tracks bodies within field of vision
 	"""
 	def __init__(self):
-		self.winStride = (4,4)
+		self.winStride = (8,8)
 		self.padding = (16,16)
-		self.scale = 1.05
+		self.scale = 1.3
 		self.meanShift = False
 
 		self.cam = None
