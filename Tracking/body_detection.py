@@ -33,7 +33,7 @@ class BodyDetector(object):
 	def __init__(self):
 		self.winStride = (4,4)
 		self.padding = (16,16)
-		self.scale = 1.05
+		self.scale = 1.03
 		self.meanShift = False
 
 		self.cam = None
@@ -45,6 +45,7 @@ class BodyDetector(object):
 		self.people_ranges = []
 
 		self.hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+
 
 	def get_video(self):
 		"""
@@ -71,9 +72,8 @@ class BodyDetector(object):
 		#return a list of rectangles that tell where people are
 		reality, self.people_ranges = self.draw_rectangles(rects,frame)
 
-
 		#updates history to help smooth over drops in frames
-		if len(self.history) < 10:
+		if len(self.history) < 50:
 			if reality:
 				self.history.append(self.people_ranges)
 			else:
@@ -104,17 +104,18 @@ class BodyDetector(object):
 			#print "i'm in history"
 			for i in range(len(self.history)-1, -1, -1):
 				if len(self.history[i]) > 0:
-					hist = self.non_max_suppression_fast(self.history[i], 0.5)
+					hist = self.non_max_suppression_fast(self.history[i], 0.3)
 					for (x, y, w, h) in hist:
 						cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 					return (0, hist)
 				return (0, [])
 
 		else:
-			rects = self.non_max_suppression_fast(rects, 0.5)
+			rects = self.non_max_suppression_fast(rects, 0.3)
 			for (x, y, w, h) in rects:
 				cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 			return (1, rects)
+
 
 	def shut_down(self):
 		"""
@@ -183,14 +184,10 @@ class BodyDetector(object):
 		return boxes[pick].astype("int")
 
 
-
-
-
 if __name__ == "__main__":
 	Bodies = BodyDetector()
 
 	while True:
-
 
 		crowd = Bodies.find_bodies()
 

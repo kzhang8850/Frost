@@ -31,7 +31,6 @@ class Frost(object):
         self.thread1 = raspi_body_detection.BodyThread(self.q)
         self.thread2 = raspi_lidar.LidarThread(self.q, self.ser)
 
-
         self.thread1.start()
         self.thread2.start()
 
@@ -51,7 +50,7 @@ class Frost(object):
 
         #for serial input from arduino for LIDAR
         self.ser = serial.Serial()
-        self.ser.port='/dev/ttyACM3'
+        self.ser.port='/dev/ttyACM0'
         self.ser.baudrate=115200
         self.ser.timeout = 1
         self.ser.write_timeout = 2     #timeout for write
@@ -59,7 +58,7 @@ class Frost(object):
 
         #for self.serial output to arduino for launcher
         self.ser_out = serial.Serial()
-        self.ser_out.port = '/dev/ttyACM2'
+        self.ser_out.port = '/dev/ttyACM1'
         self.ser_out.baudrate = 115200
         self.ser_out.timeout = 1
         self.ser_out.write_timeout = 0     #timeout for write

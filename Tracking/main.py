@@ -41,7 +41,6 @@ class Frost(object):
         self.xdata = None
 
 
-
     def initialize_serial(self):
         """
         Serial stuff
@@ -49,7 +48,7 @@ class Frost(object):
 
         #for serial input from arduino for LIDAR
         self.ser = serial.Serial()
-        self.ser.port='/dev/ttyACM1'
+        self.ser.port='/dev/ttyACM0'
         self.ser.baudrate=115200
         self.ser.timeout = 1
         self.ser.writeTimeout = 2     #timeout for write
@@ -57,12 +56,11 @@ class Frost(object):
 
         #for self.serial output to arduino for launcher
         self.ser_out = serial.Serial()
-        self.ser_out.port = '/dev/ttyACM0'
+        self.ser_out.port = '/dev/ttyACM1'
         self.ser_out.baudrate = 115200
         self.ser_out.timeout = 1
         self.ser_out.writeTimeout = 0     #timeout for write
         self.ser_out.open()
-
 
 
     def run(self):
@@ -92,7 +90,6 @@ class Frost(object):
                 print "keyboard"
                 self.thread1.terminate()
                 self.thread2.terminate()
-
 
                 break
 
