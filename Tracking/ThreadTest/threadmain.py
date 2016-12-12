@@ -17,11 +17,16 @@ thread2.start()
 
 kill = False
 
+
+start_time = time.time()
 while not kill:
     try:
         if not q.empty():
             data = q.get()
-            print data
+            elapsed_time = time.time() - start_time
+            print elapsed_time
+            start_time = time.time()
+            # print data
     except KeyboardInterrupt:
         print "keyboard"
         kill = True
