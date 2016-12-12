@@ -50,7 +50,6 @@ class SerialOut(object):
         	if (time.time() - self.prev_time) > self.time_to_arm:
         		if(not self.arm_sent):
         			self.arm_sent = True
-        			#self.ser_out.write("a = 20, power = 10")
         			self.ser_out.write("a= " + str(int(target_angle)) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
         			print ("a= " + str(target_angle) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
         	#if enough time has passed, send a command to fire

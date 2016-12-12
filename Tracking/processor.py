@@ -77,8 +77,6 @@ class SerialOut(object):
         return .1565*(distance - 9.09)
 
 
-
-
 class LidarView(object):
     """
     holds the visualization and processing for the LIDAR data
@@ -114,7 +112,6 @@ class LidarView(object):
         else:
             self.target_found = False
 
-
         self.screen.fill(pygame.Color('grey'))
         self.r_min = 1000
 
@@ -140,7 +137,6 @@ class LidarView(object):
                 if not self.target_found:
                     dot_color = pygame.Color('red')
 
-
                 #draws all the points
                 x = int((obj[1]+3)*math.cos(obj[0]*math.pi/180)*self.scaling)
                 y = int((obj[1]+3)*math.sin(obj[0]*math.pi/180)*self.scaling)
@@ -161,7 +157,6 @@ class LidarView(object):
                 # else:
                 #     pygame.draw.circle(self.screen, dot_color, (self.center[0] - x, self.model.height -(self.center[1] - y)), 2)
                 #print (x,y)
-
 
         #draws angle lines to signify what zone the target is in
         line1_x_pos = int(1000*math.cos(self.angle_1*math.pi/180))
@@ -205,6 +200,7 @@ class TargetLocator(object):
         self.kinectFOV = 57 #in degrees
         self.kinectHeight = 240.0
         self.kinectLength = 320.0
+
 
     def track(self, crowd):
         """
