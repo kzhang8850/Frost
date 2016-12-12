@@ -1,3 +1,17 @@
+#################################################################################################################################
+"""
+Processor Module - Acts as Frost's Cognitive Thinking
+
+Contains Four Classes that are utilized by the main module to calculate and perform actions on incoming data
+1. SerialOut - pushes data to the Arduino on Frost's launcher
+2. LidarView - Computes and Visualizes data from the LIDAR module
+3. TargetLocator - Computes where people's coordinates for the launcher from the Kinect module
+
+Written by Kevin Zhang, Cedric Kim, and Jeremy Garcia
+"""
+################################################################################################################################
+
+
 import time
 import serial
 import pygame
@@ -39,7 +53,6 @@ class SerialOut(object):
         send serial data after set intervals of time
         send angle of target and the distance needed to hit them, given in launcher's specs
         """
-
         #if there is no target, then loops over
         if not target_found:
             self.prev_time = time.time()
@@ -55,9 +68,7 @@ class SerialOut(object):
             if (time.time() - self.prev_time) > self.time_to_arm:
                 if(not self.arm_sent):
                     self.arm_sent = True
-                    #self.ser_out.write("a = 20, power = 10")
                     self.ser_out.write("a= " + str(int(target_angle)) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
-                    #self.ser_out.write("a= " + str(target_angle) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
                     print ("a= " + str(target_angle) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
                     self.ser_out.write(".")
 
@@ -101,7 +112,6 @@ class LidarView(object):
         draws our a projection map of the LIDAR's data, and also computes the angle and distance of the target
         if there is one.
         """
-
         #if there is a target, then get the left angle, right angle, and other information
         if(len(target_data) > 0):
             self.angle_1 = target_data[0][0]
@@ -209,11 +219,9 @@ class TargetLocator(object):
         if(len(crowd)> 0):
             self.people = []
             for (x, y, w, h) in crowd:
-                #print (x, x+w)
                 angleMax = (self.kinectLength/2 - x)/(self.kinectLength)*self.kinectFOV
                 angleMin = (self.kinectLength/2 - (x+w))/(self.kinectLength)*self.kinectFOV
                 self.people.append((angleMin, angleMax , self.get_distance_estimate(abs(y-h))))
-            #print self.people
             return self.people
         else:
             return []

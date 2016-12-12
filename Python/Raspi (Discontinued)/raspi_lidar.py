@@ -1,3 +1,25 @@
+#################################################################################################################################
+"""
+Raspi LIDAR Module - Acts as Frost's Depth Perception
+
+An Attempt to convert our working code base onto a Raspberry Pi
+Performs the same functions as the original LIDAR Module
+
+
+************************************************************ARCHIVED*************************************************************
+- Determined that the Raspberry Pi's computational power is not enough for all our algorithms, even under best conditions
+still too slow
+- The amount of hardware used by this project overloads the Raspberry Pi and causes too under voltage warnings from too much 
+current draw. 
+
+We stopped the exploration mainly due to this for fear of damaging the Raspberry Pi or lack of sufficient computatinal power
+Stopped as of 12/9/16
+
+Written by Kevin Zhang
+"""
+################################################################################################################################
+
+
 import time
 import serial
 import sys

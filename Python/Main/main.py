@@ -1,3 +1,16 @@
+#################################################################################################################################
+"""
+Main Module - Acts as Frost's Brain
+
+Instantiates two threads, one for the Body Detection module, one for the LIDAR module
+Receives data from both threads and then utilizes the processor module to track targets and  determine their distance
+Sends data forward to Arduino on Frost's launcher.
+
+Written by Kevin Zhang, Cedric Kim, and Jeremy Garcia
+"""
+################################################################################################################################
+
+
 import multiprocessing
 import Queue
 import os
@@ -9,9 +22,9 @@ import sys
 import math
 import cv2
 import numpy as np
-import raspi_body_detection
-import raspi_lidar
-import raspi_processor
+import body_detection
+import lidar
+import processor
 
 
 class Frost(object):
@@ -23,13 +36,12 @@ class Frost(object):
 
         self.ser = None
         self.ser_out = None
-        self.ser2_out = None
         self.initialize_serial()
 
-        self.supervisor = raspi_processor.Supervisor(self.ser_out)
+        self.supervisor = processor.Supervisor(self.ser_out)
 
-        self.thread1 = raspi_body_detection.BodyThread(self.q)
-        self.thread2 = raspi_lidar.LidarThread(self.q, self.ser)
+        self.thread1 = body_detection.BodyThread(self.q)
+        self.thread2 = lidar.LidarThread(self.q, self.ser)
 
         self.thread1.start()
         self.thread2.start()
@@ -42,18 +54,16 @@ class Frost(object):
         self.xdata = None
 
 
-
     def initialize_serial(self):
         """
         Serial stuff
         """
-
         #for serial input from arduino for LIDAR
         self.ser = serial.Serial()
         self.ser.port='/dev/ttyACM0'
         self.ser.baudrate=115200
         self.ser.timeout = 1
-        self.ser.write_timeout = 2     #timeout for write
+        self.ser.writeTimeout = 2     #timeout for write
         self.ser.open()
 
         #for self.serial output to arduino for launcher
@@ -61,24 +71,14 @@ class Frost(object):
         self.ser_out.port = '/dev/ttyACM1'
         self.ser_out.baudrate = 115200
         self.ser_out.timeout = 1
-        self.ser_out.write_timeout = 0     #timeout for write
+        self.ser_out.writeTimeout = 0     #timeout for write
         self.ser_out.open()
-
-        #for serial output to secondary computer for visualization
-        # self.ser2_out = serial.Serial()
-        # self.ser2_out.port='/dev/ttyACM0'
-        # self.ser2_out.baudrate=115200
-        # self.ser2_out.timeout = 1
-        # self.ser2_out.writeTimeout = 0     #timeout for write
-        # self.ser2_out.open()
-
 
 
     def run(self):
         """
-        runs the multiprocessing for Frost's Kinect vision, LIDAR, and launching
+        runs the threading and the processes for Frost's Kinect vision, LIDAR, and launching
         """
-
         while True:
             try:
                 #if the queue has data, then take it and send it off to the approrpriate processing unit in supervisor
@@ -87,14 +87,20 @@ class Frost(object):
                     if self.xdata[0] == 1:
                         (self.target_found, self.target_angle, self.target_distance) = self.supervisor.view.draw(self.xdata[1], self.target_data)
                     else:
-                        self.target_data = self.supervisor.targeter.track(self.xdata[1][1])
+                        self.target_data = self.supervisor.targeter.track(self.xdata[1])
                     self.supervisor.serial_out.send_serial(self.target_found, self.target_angle, self.target_distance)
+
+                #shuwdown sequence for pygame    
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys._exit() 
+                        break
 
             except KeyboardInterrupt:
                 print "keyboard"
                 self.thread1.terminate()
                 self.thread2.terminate()
-
 
                 break
 
