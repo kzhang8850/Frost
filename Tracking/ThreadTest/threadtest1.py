@@ -1,6 +1,6 @@
-from threading import Thread
+from multiprocessing import Process
 
-class Chicken(Thread):
+class Chicken(Process):
     def __init__(self, queue):
         super(Chicken, self).__init__()
         self.chick = 0

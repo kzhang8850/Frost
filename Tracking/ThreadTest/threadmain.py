@@ -1,15 +1,14 @@
 import Queue
 import threadtest1
 import threadtest2
+import multiprocessing
 
-q = Queue.Queue()
+q = multiprocessing.Queue()
 
 thread1 = threadtest1.Chicken(q)
-thread1.daemon = True
 thread1.start()
 
 thread2 = threadtest2.Rooster(q)
-thread2.daemon = True
 thread2.start()
 
 try:
@@ -19,6 +18,8 @@ try:
             print data
 except KeyboardInterrupt:
     print "keyboard"
+    thread1.terminate()
+    thread2.terminate()
 
 
 print "outside while loop"

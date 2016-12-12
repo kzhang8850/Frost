@@ -1,6 +1,6 @@
-from threading import Thread
+from multiprocessing import Process
 
-class Rooster(Thread):
+class Rooster(Process):
     def __init__(self, queue):
         super(Rooster, self).__init__()
         self.egg = 10
