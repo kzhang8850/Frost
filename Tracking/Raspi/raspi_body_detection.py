@@ -33,9 +33,9 @@ class BodyDetector(object):
 	main class for Kinect's computer vision, finds and tracks bodies within field of vision
 	"""
 	def __init__(self):
-		self.winStride = (4,4)
+		self.winStride = (8,8)
 		self.padding = (16,16)
-		self.scale = 1.05
+		self.scale = 1.3
 		self.meanShift = False
 
 		self.cam = None

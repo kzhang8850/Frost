@@ -77,7 +77,7 @@ class Frost(object):
 
     def run(self):
         """
-        runs the threading and the processes for Frost's Kinect vision, LIDAR, and launching
+        runs the multiprocessing for Frost's Kinect vision, LIDAR, and launching
         """
 
         while True:
