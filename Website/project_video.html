@@ -9,7 +9,7 @@
 		<!--<link rel="stylesheet" href="assets/css/background_video.css" />
 		<!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
 	</head>
-	<body>
+	<body style = "margin:0";>
         <div id="page-wrapper">
             <div class="video-background">
                 <div class="video-foreground">
@@ -27,7 +27,7 @@
         <!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
         <script>
             $(function(){
-              $('#custom_video').css({ width: $(window).innerWidth() + 'px', height: $(window).innerHeight() + 'px' });
+              $('#custom_video').css({ width: $(window).innerWidth() + 'px', height: $(window).innerHeight()-4 + 'px' });
 
               // If you want to keep full screen on window resize
               $(window).resize(function(){

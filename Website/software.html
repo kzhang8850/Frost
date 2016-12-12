@@ -50,8 +50,42 @@
                     <div class="row">
 						<div class="12u">
                             <div class="box">
-                                <h3>Look it works</h3>
+                                <h3>Body Detection</h3>
+                                <p>A detailed description of software design with links to complete source code (github or other repository is helpful). Please be sure to include a list of all external software dependencies (eg. OpenCV, Google Voice API, etc.)</p>				<span class="image fit"><img src="images/Software/software_3.png" alt="" /></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+						<div class="12u">
+                            <div class="box">
+                                <h3>PyGame Window for Lidar</h3>
                                 <p>A detailed description of software design with links to complete source code (github or other repository is helpful). Please be sure to include a list of all external software dependencies (eg. OpenCV, Google Voice API, etc.)</p>
+                                <span class="image fit"><img src="images/Software/software_2.png" alt="" /></span>
+                                <pre>
+def draw(self, dataArray, target_data):
+    """
+    draws our a projection map of the LIDAR's data, and also computes the angle and distance of the target
+    if there is one.
+    """
+
+    #if there is a target, then get the left angle, right angle, and other information
+    if(len(target_data) > 0):
+        self.angle_1 = target_data[0][0]
+        self.angle_2 = target_data[0][1]
+        self.target_angle = (self.angle_1 + self.angle_2)/2
+        self.est_dist = target_data[0][2]
+        self.target_found = True
+    else:
+        self.target_found = False
+</pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+						<div class="12u">
+                            <div class="box">
+                                <h3>Multi-Processing</h3>
+                                <p>A detailed description of software design with links to complete source code (github or other repository is helpful). Please be sure to include a list of all external software dependencies (eg. OpenCV, Google Voice API, etc.)</p>				<span class="image fit"><img src="images/Software/poe_diagram.png" alt="" /></span>
                             </div>
                         </div>
                     </div>
