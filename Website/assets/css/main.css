@@ -2080,7 +2080,7 @@
 		-ms-transition: color 0.2s ease-in-out, border-bottom-color 0.2s ease-in-out;
 		transition: color 0.2s ease-in-out, border-bottom-color 0.2s ease-in-out;
 		border-bottom: dotted 1px;
-		color: #e89980;
+		color: #277FB0;
 		text-decoration: none;
 	}
 
@@ -2305,8 +2305,8 @@
 		input[type="email"]:focus,
 		select:focus,
 		textarea:focus {
-			border-color: #e89980;
-			box-shadow: 0 0 0 2px #e89980;
+			border-color: #277FB0;
+			box-shadow: 0 0 0 2px #277FB0;
 		}
 
 	.select-wrapper {
@@ -2416,8 +2416,8 @@
 
 		input[type="checkbox"]:focus + label:before,
 		input[type="radio"]:focus + label:before {
-			border-color: #e89980;
-			box-shadow: 0 0 0 1px #e89980;
+			border-color: #277FB0;
+			box-shadow: 0 0 0 1px #277FB0;
 		}
 
 	input[type="checkbox"] + label:before {
@@ -2612,7 +2612,7 @@
 			}
 
 			.icon.major.accent2 {
-				background: #e89980;
+				background: #277FB0;
 				color: #ffffff;
 			}
 
@@ -2985,7 +2985,7 @@
 		input[type="reset"].special,
 		input[type="button"].special,
 		.button.special {
-			background-color: #e89980;
+			background-color: #277FB0;
 			color: #ffffff !important;
 		}
 
@@ -3266,7 +3266,7 @@
 			}
 
 			.dropotron li.active > a, .dropotron li.active > span, .dropotron li:hover > a, .dropotron li:hover > span {
-				background: #e89980;
+				background: #277FB0;
 				color: #ffffff;
 			}
 
@@ -3440,7 +3440,7 @@
 /* CTA */
 
 	#cta {
-		background: #e89980;
+		background: #277FB0;
 		color: #f9e5df;
 		padding: 3.5em 0 4em 0;
 		text-align: center;
@@ -3462,7 +3462,7 @@
 		#cta .button {
 			box-shadow: none;
 			background: #fff;
-			color: #e89980;
+			color: #277FB0;
 		}
 
 		#cta input[type="text"],
