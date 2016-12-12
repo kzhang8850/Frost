@@ -29,7 +29,7 @@ class SerialOut(object):
         self.time_to_send_angle = .2
         self.prev_time_angle = time.time()
         self.arm_sent = False
-
+        
 
     def send_serial(self, target_found, target_angle, target_distance):
     	"""

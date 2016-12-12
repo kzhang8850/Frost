@@ -5,24 +5,23 @@ import math
 import cv2
 import numpy as np
 import os
-from threading import Thread
+from multiprocessing import Process
 
 
-class LidarThread(Thread):
+class LidarThread(Process):
     """
-    thread class for LIDAR, used for threading and communicating data to main
+    multiprocessing class for LIDAR, used for multiprocessing and communicating data to main
     """
-    def __init__(self, queue, stop, ser):
+    def __init__(self, queue, ser):
         super(LidarThread, self).__init__()
         self.queue = queue
-        self.stop_event = stop
         self.ser = ser
         self.lidar = Lidar(self.ser)
         self.lidar_data = None
 
 
     def run(self):
-        while not self.stop_event.is_set():
+        while True:
 
             self.lidar_data = self.lidar.get_reading()
             if self.lidar_data is not None:

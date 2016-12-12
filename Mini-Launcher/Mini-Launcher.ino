@@ -168,10 +168,12 @@ void turnpanMotor(int motorSpeed) {
     }
     if(countSpeed > motorSpeed){
       countSpeed --;
-    }else{
-      counter = 0
     }
-  }else{
+    else{
+      counter = 0;
+    }
+  }
+  else{
     counter ++;
   }
   //Rotates the motors
