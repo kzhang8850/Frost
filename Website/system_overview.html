@@ -51,7 +51,7 @@
                             <div class="12u">
                                 <section class="box">
                                     <h3>Project Summary</h3>
-                                    <p>A high level summary description of the project’s objectives</p>
+                                    <p>Our objective was to create a robot that could automatically fire snowballs at people without manual input from another human being. The current project state is an autonomous robot that utilizes a Kinect camera and a LIDAR to create a projection map of its field of vision, interfacing the two data streams to find people and determine their location. The robot then actuates a pan motor to align itself with the target, and then a catapult is armed and released to fire a snowball towards the target location. The robot can then automatically re-arm itself and begin looking to find the next target and fire again.</p>
                                 </section>
                             </div>
                     </div>
@@ -59,7 +59,7 @@
                             <div class="12u">
                                 <section class="box">
                                     <h3>System Diagram</h3>
-                                    <p>A system diagram depicting the schematic relationships between all of the different subsystems comprising your final system.</p>
+                                    <p>Three Python scripts, two Arduino microcontrollers, and a helper module are used to make Frost work. One Python script receives image inputs from the Kinect camera. A second Python script receives data from the Arduino attached to the LIDAR via serial connection. Both of these scripts then feed into a main script that collects the data from both modules and combines them using a helper module. The algorithm then makes a decision that is sent to the Arduino attached to the actuators on the launcher via serial connection to pan and launch the catapult towards the target.</p>
                                 </section>
                             </div>
                     </div>
