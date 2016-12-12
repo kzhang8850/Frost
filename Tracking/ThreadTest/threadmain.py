@@ -14,8 +14,11 @@ thread2.start()
 
 start_time = time.time()
 
-try:
-    while 1:
+
+
+start_time = time.time()
+while not kill:
+    try:
         if not q.empty():
             data = q.get()
             elapsed_time = time.time() - start_time
@@ -29,4 +32,5 @@ except KeyboardInterrupt:
 
 
 print "outside while loop"
+
 print "main loop closing"
