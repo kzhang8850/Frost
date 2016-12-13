@@ -11,18 +11,15 @@
 
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 
-
 //Servo
 Servo latch;
-//Aiming Motor
+
+//Pan Motor
 Adafruit_DCMotor *panMotor = AFMS.getMotor(4);
+
+//Arm Motor
 Adafruit_DCMotor *powerMotorLeft = AFMS.getMotor(1);
 Adafruit_DCMotor *powerMotorRight = AFMS.getMotor(2);
-
-
-//Power Motor
-//Adafruit_DCMotor *PowerMotor1 = AFMS.getMotor(1);
-//Adafruit_DCMotor *PowerMotor2 = AFMS.getMotor(2);
 
 //PAN VARIABLES
 int panPot = A0;
@@ -84,6 +81,8 @@ void setup() {
 
 }
 
+
+//main loop
 void loop() {
   Serial.setTimeout(50);
   getSensorData();
@@ -108,6 +107,8 @@ void loop() {
   }
 }
 
+
+//reads current values of encoders for control
 void getSensorData() {
 
   panEncoderValue = voltageToDegrees(analogRead(panPot)) - panOffset;
@@ -116,11 +117,16 @@ void getSensorData() {
   Serial.println(armEncoderValue);
 }
 
+
+//conversion function
 float voltageToDegrees(float voltage) {
   // turns raw pot data into degrees
   return (voltage * 220) / 1024;
 }
 
+
+
+//Pan Motor moves to set angle point using PID control
 void pan() {
   //Turns target and current encoder value to power output
   if (panTarget > 80) {
@@ -154,6 +160,8 @@ void pan() {
   turnpanMotor(panMotorSpeed);
 }
 
+
+//Function for turning the Pan Motor
 void turnpanMotor(int motorSpeed) {
   //Rotates the motors
   if (motorSpeed > 0) {
@@ -166,6 +174,9 @@ void turnpanMotor(int motorSpeed) {
     panMotor ->run(RELEASE);
   }
 }
+
+
+//Function for turning Arm Motors
 void turnArmMotors(int motorSpeed) {
   if (motorSpeed > 0) {
     powerMotorLeft->setSpeed(motorSpeed);
@@ -183,6 +194,9 @@ void turnArmMotors(int motorSpeed) {
   }
 }
 
+
+
+//Manual input for testing and human control
 void getInput() {
     //INPUT IN FORMAT a = 20, power = 30
     input = Serial.readString();
@@ -237,6 +251,9 @@ void getInput() {
     }   
 
 }
+
+
+//Arm motors move back to set distance using essentially bang bang control
 void armLauncher() {
   if(armTarget > 50){
     armTarget = 50;
@@ -251,6 +268,8 @@ void armLauncher() {
 }
 
 
+
+//Re-arms the launcher using essentially bang bang control
 void resetLauncher() {
   if (armEncoderValue > 0){
     turnArmMotors(-60);
@@ -262,7 +281,8 @@ void resetLauncher() {
   }
 }
 
-//Power Functions
+
+//Arm Functions
 void activateLatch() {
   latch.write(60);
 }
