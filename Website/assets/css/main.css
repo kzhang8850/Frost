@@ -1799,7 +1799,7 @@
 		-webkit-flex-wrap: wrap;
 		-ms-flex-wrap: wrap;
 		flex-wrap: wrap;
-		postiion: relative;
+		position: relative;
 		margin: -2.5em 0 0 -2.5em;
 	}
 
@@ -2154,6 +2154,9 @@
 		position: relative;
 		top: -0.5em;
 	}
+    h3 + p {
+        font-size: 1.2em;
+    }
 
 	hr {
 		border: 0;
@@ -2221,7 +2224,7 @@
 	}
 
 	header h2 + p {
-		font-size: 1.25em;
+		font-size: 1.4em;
 		margin-top: -1em;
 		line-height: 1.5em;
 	}
@@ -3300,7 +3303,7 @@
 	#banner {
 		background-attachment: scroll,							fixed;
 		background-color: #666;
-		background-image: url("images/overlay.png"), url("../../images/Prototype/Prototype_CAD.png");
+		background-image: url("images/overlay.png"), url("../../images/finalpic_1.JPG");
 		background-position: top left,						center center;
 		background-repeat: repeat,							no-repeat;
 		background-size: auto,							cover;
@@ -3325,7 +3328,7 @@
 		}
 
 		#banner p {
-			font-size: 1.25em;
+			font-size: 1.5em;
 			margin-bottom: 1.75em;
 		}
 

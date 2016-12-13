@@ -34,7 +34,7 @@
                                         </ul>
                                     </li>
                                     <li><a href="budget.html">Budget</a></li>
-                                    <li><a href="journey.html">Our Journey</a></li>
+                                    <li><a href="journey.html">Our Story</a></li>
                                 </ul>
                             </li>
                         </ul>
@@ -44,22 +44,23 @@
 				<section id="main" class="container">
 					<header>
 						<h2>Firmware</h2>
-						<p>look it works</p>
+                        <p>Our Firmware Codebase consists mainly of the two Arduinos that link up to the two actuated components of our system: the LIDAR and the Launcher. The dependency for our firmware is the Adafruit Motorshield library.<br/><br/><strong>View our Firmware code </strong><a href="https://github.com/kzhang8850/Frost/tree/master/Arduino">here</a></p>
 					</header>
                     
                     <div class="row">
 						<div class="12u">
                             <div class="box">
-                                <h3>Arduino 1</h3>
-                                <p>A detailed description of the firmware design with links to complete source code (github or other repository is helpful).</p>
+                                <h3>LIDAR Arduino</h3>
+                                <p>An Arduino is used to grab data from the LIDAR to send to the computer. The LIDAR sends distance data, while a photo interrupter and encoder wheel determines the angle that the LIDAR is currently positioned at. After sending a syncing sequence, the Arduino packages the angle and corresponding distance data into four hexadecimal numbers. This way, we can send a lot of data in a very small amount of space.</p>
+                                <span class="image fit"><img src="images/Lidar/pygame%20window.png" alt="" /></span>
                             </div>
                         </div>
                     </div>
                     <div class="row">
 						<div class="12u">
                             <div class="box">
-                                <h3>Arduino 2</h3>
-                                <p>A detailed description of the firmware design with links to complete source code (github or other repository is helpful).</p>
+                                <h3>Launcher Arduino</h3>
+                                <p>The Arduino for the launcher is the actuated output of the system. It takes the processed data from the Main Module in Software over serial connection, which consists of an angle for the pan motor and a distance for the arm motor. The pan motor uses PID control; when an angle is received over serial, that angle becomes the set point for the PID control, and the pan motor moves the launcher to align with the  set point referencing input from the pan encoder. The distance is used by the arm motor, which will pull back the arm of the launcher to the set point given by the distance using Bang-Bang control referencing input from the arm encoder. In the main loop, the pan will constantly move towards the set point given by received data. The launcher performs a specific sequence of actions to ensure that the arm will arm, fire, and re-arm in that order. Once the arm shoots and is re-arming, the pan mechanism will wait until it’s ready again. These steps continue as long as the robot is active. If at any time, the user wishes to manually control the launcher for debugging purposes or just manual control, there exists an input mechanism that can access the launcher’s control mechanisms at any time.</p>
                             </div>
                         </div>
                     </div>

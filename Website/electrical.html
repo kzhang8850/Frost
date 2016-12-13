@@ -34,7 +34,7 @@
                                         </ul>
                                     </li>
                                     <li><a href="budget.html">Budget</a></li>
-                                    <li><a href="journey.html">Our Journey</a></li>
+                                    <li><a href="journey.html">Our Story</a></li>
                                 </ul>
                             </li>
                         </ul>
@@ -44,17 +44,27 @@
 				<section id="main" class="container">
 					<header>
 						<h2>Electrical</h2>
-						<p>look it works</p>
 					</header>
                     
                     <div class="row">
 						<div class="12u">
                             <div class="box">
-                                <h3>Circuit Diagrams</h3>
-                                <p>A detailed description of electrical design (circuit diagrams are appropriate) and any necessary analysis.</p>
+                                <h3>Lidar Electronics</h3>
+                                <p>Three small DC motors powered off 5v spins the whole contraption. In order for the Lidar Lite v3 to get power and send data while spinning, we used a slip ring contact. A photo interrupter was also used to determine the LIDAR’s position.</p>
+                                <span class="image fit"><img src="images/Lidar/lidar_diagram.PNG" alt="" /></span>
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+						<div class="12u">
+                            <div class="box">
+                                <h3>Catapult Electronics</h3>
+                                <p>One motor controller powers the 3 winch motors, while another motor controller powers the pan motor. Two potentiometers give us the angle of the pan, and the other potentiometer gives us the angle of the arm. A limit switch  on the catapult acts as an emergency stop. If the limit switch is pressed, the arm of the catapult has reached its maximum distance. This information can be used by the arduino to tell the winch to stop running. Finally, two servos are controlled by the arduino which activates our hook.</p>
+                                <span class="image fit"><img src="images/catapult_diagram.PNG" alt="" /></span>
+                            </div>
+                        </div>
+                    </div>
+                    
  				</section>
             
                 <footer id="footer">

@@ -34,7 +34,7 @@
                                         </ul>
                                     </li>
                                     <li><a href="budget.html">Budget</a></li>
-                                    <li><a href="journey.html">Our Journey</a></li>
+                                    <li><a href="journey.html">Our Story</a></li>
                                 </ul>
                             </li>
                         </ul>
@@ -44,26 +44,35 @@
 				<section id="main" class="container">
 					<header>
 						<h2>Sensors</h2>
-						<p>look it works</p>
+						<p>Frost uses a variety of different sensors, for both understanding its surroundings and understanding itself. These sensors are what give Frost intelligence and are what make Frost autonomous.</p>
 					</header>
                     
                     <div class="row">
 						<div class="12u">
                             <div class="box">
-                                <h3>Homemade Lidar</h3>
+                                <h3>Encoders</h3>
+                                <p>There are two potentiometers on the launcher that act as encoders for sensing what angle the pan motor and arm motors are at. This ensures for proper interfacing with the currently read angle and the set point angle from the received data of angle and distance. The encoders are critical for the PID control and Bang-Bang control in the launcher’s Firmware to work, as they tell the launcher how much more it needs to move before it hits the set point. These thus help Frost understand its own orientation and adjust accordingly.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+						<div class="12u">
+                            <div class="box">
+                                <h3>Lidar</h3>
                                 <!--<div class="row">
                                     <iframe height="500" class="image fit" src="https://www.youtube.com/embed/cUEJAdhIl0o?rel=0&autoplay=0" frameborder="0" allowfullscreen onload="resizeIframe(this)"></iframe>
                                 </div>-->
+                                <p>The LIDAR is a spinning distance sensor, in order to grab a live 2D scan of its surroundings. We created one from a Lidar Lite V3 linear distance sensor. We used 3 small DC motors to spin the whole contraption. A photo interrupter and encoder wheel can determine the LIDAR’s position. The encoder wheel has a slightly larger hole than the others. This way, we can determine the LIDAR’s zero position for syncing and calibration. The housing and internals are mainly 3D printed, with the exception of the bottom plate and encoder wheel. The LIDAR’s data is used in the LIDAR module, where the readings are converted from hexadecimal measurements to base 10 numbers for angle and distance. The LIDAR sits at the front of the robot near the Kinect, acting as stereoscopic vision to the eyes. This is the main sensor that allows Frost to sense its environment.<br/><br/>We referenced <a href="http://grauonline.de/wordpress/?page_id=1233">this page</a> to make our Lidar</p>
                                 <div class="row">
                                     <video class="image fit" controls>
                                         <source src="videos/lidar_2.mp4" type="video/mp4">
                                     </video>
                                 </div>
-                                <p>Cep risus aliquam gravida cep ut lacus amet. Adipiscing faucibus nunc placerat. Tempus adipiscing turpis non blandit accumsan eget lacinia nunc integer interdum amet aliquam ut orci non col ut ut praesent. Semper amet interdum mi. Phasellus enim laoreet ac ac commodo faucibus faucibus. Curae ante vestibulum ante. Blandit. Ante accumsan nisi eu placerat gravida placerat adipiscing in risus fusce vitae ac mi accumsan nunc in accumsan tempor blandit aliquet aliquet lobortis. Ultricies blandit lobortis praesent turpis. Adipiscing accumsan adipiscing adipiscing ac lacinia cep. Orci blandit a iaculis adipiscing ac. Vivamus ornare laoreet odio vis praesent nunc lorem mi. Erat. Tempus sem faucibus ac id. Vis in blandit. Nascetur ultricies blandit ac. Arcu aliquam. Accumsan mi eget adipiscing nulla. Non vestibulum ac interdum condimentum semper commodo massa arcu.</p>
                             </div>
                         </div>
                     </div>
-                    <div class="row">
+                    <!--<div class="row">
                         <div class="12u">
                             <div class="box">
                                 <section class="box">
@@ -89,13 +98,14 @@
 								</section>
                             </div>
                         </div>
-                    </div>
+                    </div>-->
                     <div class="row">
                         <div class="12u">
                             <div class="box">
                                 <section class="box">
 									<h3>Kinect</h3>
 									<span class="image fit"><img src="images/Software/kinect.jpg" alt="" /></span>
+                                    <p style="font-size:1.2em;">The Kinect actually has multiple different sensors, including a camera and two infrared sensors. Because the infrared sensors don’t have the range needed for our project, we only utilize the functionality of the camera. The Kinect camera is used in the Body Detection module in Software to find and track human bodies. The camera sits at the front of the launcher and thus is placed in a way to match human eyes for maximum functionality. This is the main sensor that allows Frost to differentiate its environment and tell what is what.</p>
 								</section>
                             </div>
                         </div>
