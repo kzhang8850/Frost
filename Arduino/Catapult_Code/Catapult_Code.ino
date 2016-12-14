@@ -7,19 +7,22 @@
 //DC Motor Initialization
 #include <Wire.h>
 #include <Adafruit_MotorShield.h>
-#include "utility/Adafruit_PWMServoDriver.h"
+//#include "utility/Adafruit_PWMServoDriver.h"
 
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 
+#define limitSwitchPin 1
 //Servo
-Servo latch;
+Servo latch1; //70 locked 110 unlocked
+Servo latch2; //100 locked 55 unlocked
 
 //Pan Motor
-Adafruit_DCMotor *panMotor = AFMS.getMotor(4);
+Adafruit_DCMotor *panMotor = AFMS.getMotor(3);
 
-//Arm Motor
-Adafruit_DCMotor *powerMotorLeft = AFMS.getMotor(1);
-Adafruit_DCMotor *powerMotorRight = AFMS.getMotor(2);
+//Winch Motors
+Adafruit_DCMotor *winch1 = AFMS.getMotor(1);
+Adafruit_DCMotor *winch2 = AFMS.getMotor(2);
+Adafruit_DCMotor *winch3 = AFMS.getMotor(4);
 
 //PAN VARIABLES
 int panPot = A0;
@@ -50,7 +53,7 @@ int Distance;
 //ARM VARIABLES
 int armPot = A1;
 float armEncoderValue;
-float armOffset = 85+18+5
+float armOffset = 41
 ; //IN DEGREES
 bool reset = false;
 bool fire = false;
@@ -69,7 +72,8 @@ void setup() {
   //sets up motors
   AFMS.begin();
   
-  latch.attach(9);
+  latch1.attach(9);
+  latch2.attach(10);
   fireLauncher();
   panMotor->run(RELEASE);
 
@@ -179,18 +183,23 @@ void turnpanMotor(int motorSpeed) {
 //Function for turning Arm Motors
 void turnArmMotors(int motorSpeed) {
   if (motorSpeed > 0) {
-    powerMotorLeft->setSpeed(motorSpeed);
-    powerMotorRight->setSpeed(motorSpeed);
-    powerMotorLeft->run(FORWARD);
-    powerMotorRight->run(BACKWARD);
+    winch1->setSpeed(motorSpeed);
+    winch2->setSpeed(motorSpeed);
+    winch3->setSpeed(motorSpeed);
+    winch1->run(FORWARD);
+    winch2->run(FORWARD);
+    winch3->run(FORWARD);
   } else if (motorSpeed < 0) {
-    powerMotorLeft->setSpeed(abs(motorSpeed));
-    powerMotorRight->setSpeed(abs(motorSpeed));
-    powerMotorLeft->run(BACKWARD);
-    powerMotorRight->run(FORWARD);
+    winch1->setSpeed(abs(motorSpeed));
+    winch2->setSpeed(abs(motorSpeed));
+    winch3->setSpeed(motorSpeed);
+    winch1->run(BACKWARD);
+    winch2->run(BACKWARD);
+    winch3->run(BACKWARD);
   } else {
-    powerMotorLeft->run(RELEASE);
-    powerMotorRight->run(RELEASE);
+    winch1->run(RELEASE);
+    winch2->run(RELEASE);
+    winch3->run(RELEASE);
   }
 }
 
@@ -262,6 +271,7 @@ void armLauncher() {
     turnArmMotors(100);
   }
   else{
+    fire = true;
     arm = false;
     turnArmMotors(10);
   }
@@ -284,12 +294,13 @@ void resetLauncher() {
 
 //Arm Functions
 void activateLatch() {
-  latch.write(60);
+  latch2.detach();
+  latch1.detach();
+  //latch2.write(100);
+  //latch1.write(70);
 }
-
 void fireLauncher() {
-  latch.write(170);
+  //latch2.write(55);
+  //latch1.write(110);
 }
-
-
 
