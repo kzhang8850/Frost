@@ -2,7 +2,7 @@
 
 <html>
 	<head>
-		<title>Our Journey</title>
+		<title>Our Story</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
@@ -34,7 +34,7 @@
                                         </ul>
                                     </li>
                                     <li><a href="budget.html">Budget</a></li>
-                                    <li><a href="journey.html">Our Journey</a></li>
+                                    <li><a href="journey.html">Our Story</a></li>
                                 </ul>
                             </li>
                         </ul>
@@ -43,19 +43,17 @@
 			<!-- Main -->
 				<section id="main" class="container">
 					<header>
-						<h2>Our Journey</h2>
-						<p>look it works</p>
+						<h2>Our Story</h2>
+						<p>How we got here</p>
 					</header>
                     
                     <div class="row">
 						<div class="12u">
                             <div class="box">
                                 <h3>Sprint 1</h3>
-                                <p>The final deliverable for your course project on which you’ll be graded is your final project website, not the engineering system itself. Your project’s website should capture and document the work you’ve done on your project to make it a success on demo day. One way to think about the final website is that someone coming to your site with your skills should reasonably be able to reproduce your work. Another way to think about your website is to put yourself in the position of a future PoE student looking for inspiration - would you find the website helpful? Inspiring? <br/><br/>
-                                Your final project website should accomplish these two objectives:<br/>
-                                Thoroughly document your project - design, technical, and appropriate process work.<br/>
-                                Develop media that is suitably polished to represent your finished work publicly on the web.
+                                <p>For our first sprint, the team wanted to begin with a proof of concept that showed we could actually design and create a snowball launcher. We decided then that the main goal of the first sprint was going to be to create a small scale prototype catapult that would take in an angle and power and then fire accordingly. We were successful in producing a mini-launcher that could fire towards a target based on manual control. We also tried to experiment with laser sensors, and determined that laser range finders were too hard to interface with, so we decided we would build our own LIDAR in the upcoming sprint. But this sprint was a strong validation proving that our project was possible and could be created.
                                 </p>
+                                <span class="image fit"><img src="images/Prototype/Prototype_CAD.png" alt="" /></span>
                             </div>
                         </div>
                     </div>
@@ -63,7 +61,7 @@
 						<div class="12u">
                             <div class="box">
                                 <h3>Sprint 2</h3>
-                                <p>The final deliverable for your course project on which you’ll be graded is your final project website, not the engineering system itself. Your project’s website should capture and document the work you’ve done on your project to make it a success on demo day. One way to think about the final website is that someone coming to your site with your skills should reasonably be able to reproduce your work. Another way to think about your website is to put yourself in the position of a future PoE student looking for inspiration - would you find the website helpful? 
+                                <p>Our next sprint was more experimental and a significant learning experience for us. The team wanted to progress forward with adding automation and intelligence to Frost. We decided to try and integrate computer vision into our prototype, and we also initiated exploratory ventures to create a snow compactor and a DIY LIDAR. For computer vision, we experimented with various motion detection algorithms to try to find and track people, as this was a simpler approach. Motion detection turned out not be as accurate or stable as we imagined, and while we were able to integrate it onto our prototype, its outputs confused the pan motor more often than not. The snow compactor was a failure; we couldn’t find a proper way to ensure that snowballs could be easily compacted and separated from a mass of snow, as the mechanism kept getting stuck in the snow pile. We decided to pivot from a fully autonomous robot that could also make its own snowballs in addition to shooting them to just an autonomous robot that could shoot snowballs if you could hand them to it. We were, however, able to create our own LIDAR and make it work independently. This sprint taught us about proper scoping and not trying to finish so many different projects at once. 
                                 </p>
                             </div>
                         </div>
@@ -72,8 +70,9 @@
 						<div class="12u">
                             <div class="box">
                                 <h3>Sprint 3</h3>
-                                <p>The final deliverable for your course project on which you’ll be graded is your final project website, not the engineering system itself. Your project’s website should capture and document the work you’ve done on your project to make it a success on demo day. One way to think about the final website is that someone coming to your site with your skills should reasonably be able to reproduce your work. Another way to think about your website is to put yourself in the position of a future PoE student looking for inspiration - would you find the website helpful? 
+                                <p>In the third sprint, our main goal became to have a fully integrated prototype working with an improved computer vision system and a working LIDAR unit. As a stretch goal, we also decided that it was time to begin working on the final version of the mechanical design, and if possible, to integrate with that. Due to complications with part ordering and fabrication, we were unable to fully finish machining the final robot. However, we were able to demonstrate a fully integrated robot prototype. We switched to body detection for the computer vision unit because it was more accurate, stable, and easily adjustable. The output to the pan motor was much more smooth and exact on the target location. We also finalized the LIDAR and interfaced that with the codebase. Combining the two data streams allowed us to create a projection map that allowed Frost to both sense and comprehend its surroundings, so it could understand its environment and differentiate between bodies and background. Implementing multiprocessing into our code, we were able to make our prototype model autonomously find, track, and fire projectiles at targets. 
                                 </p>
+                                <span class="image fit"><img src="images/Sprint3.jpg" alt="" /></span>
                             </div>
                         </div>
                     </div>
@@ -81,8 +80,9 @@
 						<div class="12u">
                             <div class="box">
                                 <h3>Sprint 4</h3>
-                                <p>The final deliverable for your course project on which you’ll be graded is your final project website, not the engineering system itself. Your project’s website should capture and document the work you’ve done on your project to make it a success on demo day. One way to think about the final website is that someone coming to your site with your skills should reasonably be able to reproduce your work. Another way to think about your website is to put yourself in the position of a future PoE student looking for inspiration - would you find the website helpful? 
+                                <p>Our final sprint was the final push, which was to translate the integrated system onto the final catapult, and finalize our integrated product. For the computer vision unit, we fine-tuned and optimized the finding and tracking, such that they could consistently and smoothly track human bodies with limited lag in frame rate. The LIDAR unit was also improved and made more consistent in its readings. We attempted to move our software onto a Raspberry Pi so that it was independent of a computer and power supply. However, we realized that our project uses way too much hardware, and plugging all of them into the Raspberry Pi causes an overload of current draw. In addition, our codebase requires computational power that exceeded that of the Raspberry Pi, making even the most optimized version run too slowly for realistic usage. Thus we decided to archive the Raspberry Pi unit and continue development with a stationary computer. This was perfectly okay because the robot itself is stationary, and we still learned a great deal about the Raspberry Pi. We finished fabricating and assembling our final catapult, which was bigger, made of metal, and much stronger than the prototype. We also remade our circuit boards and other electrical components to accommodate for the new robot. With the finished Mechanical, Software, and Electrical components ready, we finished our project by integrating all the parts together and improving the final product until it was ready.
                                 </p>
+                                <span class="image fit"><img src="images/finalpic_2.JPG" alt="" /></span>
                             </div>
                         </div>
                     </div>
