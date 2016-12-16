@@ -41,8 +41,8 @@ class SerialOut(object):
     def __init__(self, ser_out):
         self.ser_out = ser_out
         self.prev_time = time.time()
-        self.time_to_arm = 8
-        self.time_to_shoot = 12
+        self.time_to_arm = 6
+        self.time_to_shoot = 8
         self.time_to_send_angle = .5
         self.prev_time_angle = time.time()
         self.arm_sent = False
@@ -72,16 +72,16 @@ class SerialOut(object):
                     self.arm_sent = True
                 #self.prev_time = time.time()
                     #self.ser_out.write("a= "+ str( 20) + ", p = " + str(10))
-                    #self.ser_out.write("a= " + str(int(target_angle*1.15)) + ", p = " + str(int(self.distance_to_motor_power(target_distance))))
+                    self.ser_out.write("a= " + str(int(target_angle*1.15)) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
                     print ("a= " + str(target_angle) + ", p = " + str(int(self.distance_to_motor_power(target_distance))))
                     #self.ser_out.write(".")
             #if enough time has passed, send a command to fire
-            """if(time.time() - self.prev_time) > self.time_to_shoot:
+            if(time.time() - self.prev_time) > self.time_to_shoot:
                 # self.ser_out.write(".")
                 # self.ser_out.write("fire")
                 print ("fire")
                 self.prev_time = time.time()
-                self.arm_sent = False"""
+                self.arm_sent = False
 
 
     def distance_to_motor_power(self, distance):
@@ -198,7 +198,7 @@ class LidarView(object):
 
         #draws a radius to visualize distance of target from LIDAR                
         if self.target_found:
-            if self.r_min >5:
+            if self.r_min >10:
                 pygame.draw.circle(self.screen, pygame.Color('blue'), (self.center[0], self.model.height - (self.center[1])), int(self.r_min*self.scaling), 1)
 
                 # if (obj[1] > (self.est_dist - self.est_threshold) and obj[1] < (self.est_dist + self.est_threshold) and dot_color==pygame.Color('green')):

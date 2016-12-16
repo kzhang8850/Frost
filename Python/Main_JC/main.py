@@ -47,7 +47,7 @@ class Frost(object):
         self.thread2.start()
 
         self.target_data = []
-        self.target_angle = 0
+        self.target_angle = 0   
         self.target_found = False
         self.target_distance = 0
 
@@ -60,7 +60,7 @@ class Frost(object):
         """
         #for serial input from arduino for LIDAR
         self.ser = serial.Serial()
-        self.ser.port='/dev/ttyACM3'
+        self.ser.port='/dev/ttyACM7'
         self.ser.baudrate=115200
         self.ser.timeout = 1
         self.ser.writeTimeout = 2     #timeout for write
@@ -68,8 +68,8 @@ class Frost(object):
 
         #for self.serial output to arduino for launcher
         self.ser_out = serial.Serial()
-        self.ser_out.port = '/dev/ttyACM2'
-        self.ser_out.baudrate = 115200
+        self.ser_out.port = '/dev/ttyACM5'
+        self.ser_out.baudrate = 9600
         self.ser_out.timeout = 1
         self.ser_out.writeTimeout = 0     #timeout for write
         self.ser_out.open()
