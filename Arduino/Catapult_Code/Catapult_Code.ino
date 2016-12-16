@@ -32,7 +32,7 @@ Adafruit_DCMotor *panMotor = AFMS2.getMotor(4);
 int panPot = A0;
 int panTopSpeed = 80;
 float panEncoderValue;    //IN DEGREES
-float panOffset = 53.28; //IN DEGREES
+float panOffset = 255; //IN VOLTAGE
 float panError = 0;  //IN DEGREES
 float panPGain = 10;
 float panDGain = 20;
@@ -57,7 +57,7 @@ int Distance;
 //ARM VARIABLES
 int armPot = A1;
 float armEncoderValue;
-float armOffset = 44
+float armOffset = 201; // IN VOLTAGE
 ; //IN DEGREES
 bool reset = false;
 bool fire = false;
@@ -121,9 +121,10 @@ void loop() {
 void getSensorData() {
   //DO NOT COMMENT OUT SWITCH PRESSED
   switchPressed = digitalRead(limitSwitchPin);
-  panEncoderValue = voltageToDegrees(analogRead(panPot)) - panOffset;
+  //clockwise values are positive
+  panEncoderValue = -voltageToDegrees(analogRead(panPot) - panOffset);
   //Serial.println(panEncoderValue);
-  armEncoderValue = voltageToDegrees(analogRead(armPot)) - armOffset;
+  armEncoderValue = voltageToDegrees(analogRead(armPot) - armOffset);
   //Serial.println(armEncoderValue);
 }
 
@@ -131,7 +132,7 @@ void getSensorData() {
 //conversion function
 float voltageToDegrees(float voltage) {
   // turns raw pot data into degrees
-  return (voltage * 220) / 1024;
+  return voltage/4;
 }
 
 
@@ -139,11 +140,13 @@ float voltageToDegrees(float voltage) {
 //Pan Motor moves to set angle point using PID control
 void pan() {
   //Turns target and current encoder value to power output
-  if (panTarget > 80) {
-    panTarget = 80;
+  if (panTarget > 60) {
+    panTarget = 60;
+    Serial.println("pan limit reached");
   }
-  if (panTarget < -80) {
-    panTarget = 80;
+  if (panTarget < -60) {
+    panTarget = 60;
+    Serial.println("pan limit reached");
   }
   if (millis() - prevTime > panDt) {
     int prevPanEncoderValue = panEncoderValue;
@@ -176,10 +179,10 @@ void turnpanMotor(int motorSpeed) {
   //Rotates the motors
   if (motorSpeed > 0) {
     panMotor->setSpeed(motorSpeed);
-    panMotor->run(FORWARD);
+    panMotor->run(BACKWARD);
   } else if (motorSpeed < 0) {
     panMotor->setSpeed(abs(motorSpeed));
-    panMotor->run(BACKWARD);
+    panMotor->run(FORWARD);
   } else {
     panMotor ->run(RELEASE);
   }
@@ -315,7 +318,7 @@ void resetLauncher() {
   if (armEncoderValue > 0){
     turnArmMotors(-200);
   }else{
-    delay(20);
+    delay(70);
     turnArmMotors(1);
     delay(10);
     turnArmMotors(0);

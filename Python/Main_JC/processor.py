@@ -85,7 +85,7 @@ class SerialOut(object):
         """
         performs a conversion to get distance into launcher specs
         """
-        return .06*(distance - 9.09)
+        return .1*(distance - 9.09)
 
 
 class LidarView(object):
@@ -98,26 +98,13 @@ class LidarView(object):
         self.center = model.center
         self.scaling = .3
 
-
-        #starting angle ranges
         self.angle_1 = 340
         self.angle_2 = 70
-
-        #angle of the target
         self.target_angle = 0
-
-        #whether the target has been found
+        self.est_dist = 500
+        self.est_threshold = 30
+        self.r_min = 1000
         self.target_found = False
-
-        #datapoints corresponding to the person, in tuples of angle and distance
-        self.person = []
-
-        #the person' average distance away from Frost
-        self.person_distance = 5000
-
-        #a short sliding window to check for stray datapoints
-        self.history = []
-        self.started = False
 
 
     def draw(self, dataArray, target_data):
@@ -125,92 +112,69 @@ class LidarView(object):
         draws our a projection map of the LIDAR's data, and also computes the angle and distance of the target
         if there is one.
         """
-
-        #sorts the data array, using default to sort by angle, which is the first index
-        dataArray = sorted(dataArray)
-
         #if there is a target, then get the left angle, right angle, and other information
         if(len(target_data) > 0):
-            self.angle_1 = target_data[0][0]
-            self.angle_2 = target_data[0][1]
+            self.angle_1 = target_data[0][0] #left angle of first target
+            self.angle_2 = target_data[0][1] #right angle of first target
+            self.target_angle = (self.angle_1 + self.angle_2)/2
+            self.est_dist = target_data[0][2]
             self.target_found = True
-
-            #makes angles nice
-            if self.angle_1 < 0:
-                self.angle_1 += 360
-            if self.angle_2 < 0:
-                self.angle_2 += 360
-            if self.angle_1 > self.angle_2:
-                self.angle_1 -= 360
         else:
             self.target_found = False
 
         self.screen.fill(pygame.Color('grey'))
-        self.person_distance = 5000
+        self.r_min = 1000
 
         #assigns colors to all data points for visualizations, and also calculates the distance
-        for i in range(len(dataArray)):
-            if dataArray[i] is not None:
-                
-                angle = dataArray[i][0]
-                distance = dataArray[i][1]
-
-                #classifies datapoints
-                if (self.angle_1 <= angle <= self.angle_2):
+        for i, obj in enumerate(dataArray):
+            if obj != None:
+                angle = obj[0]
+                if angle>180:
+                    angle = angle-360
+                if angle>self.angle_1 and angle<self.angle_2:
                     dot_color = pygame.Color('green')
                 else:
                     dot_color = pygame.Color('red')
-
-                #catches all no targets found to ensure red
+                """#makes angles nice
+                if self.angle_1 < 0:
+                    self.angle_1 = self.angle_1 + 360
+                if self.angle_2 < 0:
+                    self.angle_2 = self.angle_2 + 360
+                #classifies datapoints
+                if self.angle_1 > self.angle_2:
+                    if (self.angle_2 <= obj[0]<= self.angle_1):
+                        #if outside angle range
+                        dot_color = pygame.Color('red')
+                    else:
+                        dot_color = pygame.Color('green')
+                else:
+                    if (self.angle_1 <= obj[0]<= self.angle_2):
+                        dot_color = pygame.Color('green')
+                    else:
+                        dot_color = pygame.Color('red')
                 if not self.target_found:
-                    dot_color = pygame.Color('red')
-                
-                #draws all the points
-                x = int((distance+3)*math.cos(angle*math.pi/180)*self.scaling)
-                y = int((distance+3)*math.sin(angle*math.pi/180)*self.scaling)
+                    dot_color = pygame.Color('red')"""
 
+                #draws all the points
+                x = int((obj[1]+3)*math.cos(obj[0]*math.pi/180)*self.scaling)
+                y = int((obj[1]+3)*math.sin(obj[0]*math.pi/180)*self.scaling)
                 pygame.draw.circle(self.screen, dot_color, (self.center[0] - x, self.model.height -(self.center[1] - y)), 2)
 
                 #calculates distance by finding the closest point in the angle range of the target
                 if (dot_color==pygame.Color('green')):
-                    if abs(self.person_distance - distance) <= 3:
-                        self.person_distance *= len(self.person)
-                        self.person.append((angle, distance))
-                        self.person_distance += distance
-                        self.person_distance /= len(self.person)
-                    else:
-                        if self.started:
-                            if (abs(self.person_distance - distance) > 3) and (distance < self.person_distance) and (abs(np.mean(self.history) - distance) < 15):
-                                self.person = []
-                                self.person.append((angle, distance))
-                                self.person_distance = distance
-                        else:
-                            if (abs(self.person_distance - distance) > 3) and (distance < self.person_distance):
-                                self.person = []
-                                self.person.append((angle, distance))
-                                self.person_distance = distance
-
-
-        #find person angle
-        print self.person_distance
-        if len(self.person) >0:
-            self.target_angle = (self.person[0][0] + self.person[-1][0])/2
-
-            print self.person
-        #acknowledge first loop has passed
-        if not self.started:
-            self.started = True
-
-        #update history
-        if len(self.history) < 3:
-            self.history.append(self.person_distance)
-        else:
-            self.history.pop(0)
-            self.history.append(self.person_distance)
+                    if obj[1]<self.r_min:
+                        self.r_min = obj[1]
 
         #draws a radius to visualize distance of target from LIDAR                
-        if self.target_found and (self.person_distance > 5):
-                pygame.draw.circle(self.screen, pygame.Color('blue'), (self.center[0], self.model.height - (self.center[1])), int(self.person_distance*self.scaling), 1)
+        if self.target_found:
+            if self.r_min >5:
+                pygame.draw.circle(self.screen, pygame.Color('blue'), (self.center[0], self.model.height - (self.center[1])), int(self.r_min*self.scaling), 1)
+
+                # if (obj[1] > (self.est_dist - self.est_threshold) and obj[1] < (self.est_dist + self.est_threshold) and dot_color==pygame.Color('green')):
+                #     pygame.draw.circle(self.screen, pygame.Color('blue'), (self.center[0] - x, self.model.height -(self.center[1] - y)), 2)
+                # else:
+                #     pygame.draw.circle(self.screen, dot_color, (self.center[0] - x, self.model.height -(self.center[1] - y)), 2)
+                #print (x,y)
 
         #draws angle lines to signify what zone the target is in
         line1_x_pos = int(1000*math.cos(self.angle_1*math.pi/180))
@@ -219,13 +183,19 @@ class LidarView(object):
         line2_y_pos = int(1000*math.sin(self.angle_2*math.pi/180))
 
         pygame.draw.circle(self.screen, pygame.Color('yellow'), (self.center[0], self.model.height - (self.center[1])), 3)
-
         if self.target_found:
             pygame.draw.line(self.screen, pygame.Color('green'), (self.center[0], self.model.height - (self.center[1])),(self.center[0]-line1_x_pos, self.model.height - (self.center[1]-line1_y_pos)),1)
             pygame.draw.line(self.screen, pygame.Color('green'), (self.center[0], self.model.height - (self.center[1])),(self.center[0]-line2_x_pos, self.model.height - (self.center[1]-line2_y_pos)),1)
 
+        # if self.angle_1>self.angle_2:
+        #     pygame.draw.arc(self.screen, pygame.Color('blue'), (self.center[0]-((self.est_dist+self.est_threshold)*self.scaling), self.model.height - (self.center[1])-((self.est_dist+self.est_threshold)*self.scaling),(self.est_dist+self.est_threshold)*2*self.scaling,(self.est_dist+self.est_threshold)*2*self.scaling),(self.angle_1-180)*(math.pi/180.),(self.angle_2+180)*(math.pi/180))
+        #     pygame.draw.arc(self.screen, pygame.Color('blue'), (self.center[0]-((self.est_dist-self.est_threshold)*self.scaling), self.model.height - (self.center[1])-((self.est_dist-self.est_threshold)*self.scaling),(self.est_dist-self.est_threshold)*2*self.scaling,(self.est_dist-self.est_threshold)*2*self.scaling),(self.angle_1-180)*(math.pi/180.),(self.angle_2+180)*(math.pi/180))
+        # else:
+        #     pygame.draw.arc(self.screen, pygame.Color('blue'), (self.center[0]-((self.est_dist+self.est_threshold)*self.scaling), self.model.height - (self.center[1])-((self.est_dist+self.est_threshold)*self.scaling),(self.est_dist+self.est_threshold)*2*self.scaling,(self.est_dist+self.est_threshold)*2*self.scaling),(self.angle_1+180)*(math.pi/180.),(self.angle_2+180)*(math.pi/180))
+        #     pygame.draw.arc(self.screen, pygame.Color('blue'), (self.center[0]-((self.est_dist-self.est_threshold)*self.scaling), self.model.height - (self.center[1])-((self.est_dist-self.est_threshold)*self.scaling),(self.est_dist-self.est_threshold)*2*self.scaling,(self.est_dist-self.est_threshold)*2*self.scaling),(self.angle_1+180)*(math.pi/180.),(self.angle_2+180)*(math.pi/180))
+
         pygame.display.update()
-        return (self.target_found, -self.target_angle, self.person_distance)
+        return (self.target_found, -self.target_angle, self.r_min)
 
 
 class LidarModel(object):
@@ -268,22 +238,7 @@ class TargetLocator(object):
     def get_distance_estimate(self, height):
         return -.19012*height + 542.5
 
-
-
 if __name__ == "__main__":
-    #testing stuff
-    test = Supervisor(None)
-    testdataarray = [[1,40],[2,45],[3,44],[4,46],[5,47],[6,45],[7,44],[8,45],[9,45],[10,46],[11,47],[12,45],[13,45],[14,45],[15,46],[16,45],[17,24],[18,24],[19,25],[20,26],[21,24],[22,46],[23,46],[24,45],[25,45],[26,45],
-                    [27,45],[28,44],[29,46],[30,45]]
-    testangles = [(10, 25), (45,45)]
-    print test.view.draw(testdataarray, testangles)
-    testdataarray = [[1,40],[2,45],[3,44],[4,46],[5,47],[6,45],[7,44],[8,45],[9,45],[10,46],[11,47],[12,45],[13,45],[14,45],[15,46],[16,45],[17,24],[18,24],[19,25],[20,6],[21,24],[22,46],[23,46],[24,45],[25,45],[26,45],
-                    [27,45],[28,44],[29,46],[30,45]]
-    testangles = [(10, 25), (45,45)]
-    print test.view.draw(testdataarray, testangles)
-    testdataarray = [[1,40],[2,45],[3,44],[4,46],[5,47],[6,45],[7,44],[8,45],[9,45],[10,46],[11,47],[12,45],[13,45],[14,45],[15,46],[16,45],[17,24],[18,24],[19,25],[20,46],[21,24],[22,46],[23,46],[24,45],[25,45],[26,45],
-                    [27,45],[28,44],[29,46],[30,45]]
-    testangles = [(10, 25), (45,45)]
-    print test.view.draw(testdataarray, testangles)
-
-
+    model = LidarModel()
+    screen = pygame.display.set_mode(model.size)
+    view = LidarView(screen, model)

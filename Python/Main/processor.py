@@ -85,7 +85,7 @@ class SerialOut(object):
         """
         performs a conversion to get distance into launcher specs
         """
-        return .1565*(distance - 9.09)
+        return .1*(distance - 9.09)
 
 
 class LidarView(object):
