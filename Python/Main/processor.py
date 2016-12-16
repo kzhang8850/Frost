@@ -68,7 +68,7 @@ class SerialOut(object):
             if (time.time() - self.prev_time) > self.time_to_arm:
                 if(not self.arm_sent):
                     self.arm_sent = True
-                    self.ser_out.write("a= " + str(int(target_angle)) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
+                    self.ser_out.write("a= " + str(int(target_angle*1.15)) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
                     print ("a= " + str(target_angle) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
                     self.ser_out.write(".")
 
@@ -85,7 +85,7 @@ class SerialOut(object):
         """
         performs a conversion to get distance into launcher specs
         """
-        return .1*(distance - 9.09)
+        return .0897*(distance - 3.7082)
 
 
 class LidarView(object):
@@ -121,6 +121,9 @@ class LidarView(object):
             self.target_found = True
         else:
             self.target_found = False
+            self.angle_1 = 0
+            self.angle_2 = 0
+            self.target_angle = 0
 
         self.screen.fill(pygame.Color('grey'))
         self.r_min = 1000

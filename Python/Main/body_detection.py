@@ -114,7 +114,7 @@ class BodyDetector(object):
 		draws rectangles in frame where people are, can use history or new rectangles depending on dropped frames
 		"""
 		#if current rects has no rects, then look through history, and if there was a very recent rectangle, then use that rectangle
-		if len(rects) == 0 and len(self.history) > 0 and any(len(item) > 0 for item in self.history):
+		"""if len(rects) == 0 and len(self.history) > 0 and any(len(item) > 0 for item in self.history):
 			for i in range(len(self.history)-1, -1, -1):
 				if len(self.history[i]) > 0:
 					hist = self.non_max_suppression_fast(self.history[i], .3)
@@ -123,11 +123,11 @@ class BodyDetector(object):
 					return (0, hist)
 				return (0, [])
 
-		else:
-			rects = self.non_max_suppression_fast(rects, .3)
-			for (x, y, w, h) in rects:
-				cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-			return (1, rects)
+		else:"""
+		rects = self.non_max_suppression_fast(rects, .3)
+		for (x, y, w, h) in rects:
+			cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+		return (1, rects)
 
 
 	def shut_down(self):

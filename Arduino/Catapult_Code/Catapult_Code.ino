@@ -275,7 +275,7 @@ void getInput() {
       stringvalue.trim();
       value = stringvalue.toInt();
       ID.trim();
-      if(ID == "power"){
+      if(ID == "p"){
         armTarget = value;
         if(armTarget > 0){
           arm =  true;

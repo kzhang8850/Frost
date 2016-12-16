@@ -112,9 +112,9 @@ class Lidar(object):
                 self.counter += 1
                 result = self.dataArray
                 self.dataArray = []
-                #if(self.sync_counter > 10):
-                #    self.ser.flushInput()
-                #    self.sync_counter = 0
+                if(self.sync_counter > 10):
+                    self.ser.flushInput()
+                    self.sync_counter = 0
                 self.j = 0
                 return result
 

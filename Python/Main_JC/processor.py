@@ -56,31 +56,32 @@ class SerialOut(object):
         #if there is no target, then loops over
         if not target_found:
             self.prev_time = time.time()
-            pass
+            #pass
         else:
 
             #if enough time has passed, send an angle
             if(time.time() - self.prev_time_angle > self.time_to_send_angle):
                 self.ser_out.write("a = " + str(int(target_angle*1.15)))
                 self.prev_time_angle = time.time()
-                print (time.time() - self.prev_time)
+                #print (time.time() - self.prev_time)
 
             #if enough time has passed, send an angle and a distance to arm the launcher
-
+            #if(not self.arm_sent):
             if (time.time() - self.prev_time) > self.time_to_arm:
-                if(not self.arm_sent):
+                    self.prev_time = time.time()
                     self.arm_sent = True
                 #self.prev_time = time.time()
-                    self.ser_out.write("a= " + str(int(target_angle)) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
-                    print ("a= " + str(target_angle) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
+                    #self.ser_out.write("a= "+ str( 20) + ", p = " + str(10))
+                    #self.ser_out.write("a= " + str(int(target_angle*1.15)) + ", p = " + str(int(self.distance_to_motor_power(target_distance))))
+                    print ("a= " + str(target_angle) + ", p = " + str(int(self.distance_to_motor_power(target_distance))))
                     #self.ser_out.write(".")
             #if enough time has passed, send a command to fire
-            if(time.time() - self.prev_time) > self.time_to_shoot:
+            """if(time.time() - self.prev_time) > self.time_to_shoot:
                 # self.ser_out.write(".")
                 # self.ser_out.write("fire")
                 print ("fire")
                 self.prev_time = time.time()
-                self.arm_sent = False
+                self.arm_sent = False"""
 
 
     def distance_to_motor_power(self, distance):
@@ -133,11 +134,9 @@ class LidarView(object):
 
         self.screen.fill(pygame.Color('grey'))
         self.r_min = 1000
-
         #assigns colors to all data points for visualizations, and also calculates the distance
         # 3 sets of data wedge
         self.data_wedge = []
-        
         for i, obj in enumerate(dataArray):
             if obj != None:
                 angle = obj[0]
