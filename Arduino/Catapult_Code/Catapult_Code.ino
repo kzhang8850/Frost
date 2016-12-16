@@ -20,19 +20,19 @@ Servo latch2; //100 locked 55 unlocked
 Adafruit_MotorShield AFMS(0x60);// = Adafruit_MotorShield();
 Adafruit_MotorShield AFMS2(0x61);// = Adafruit_MotorShield();
 //Pan Motor
-Adafruit_DCMotor *panMotor = AFMS.getMotor(3);
 
 //Winch Motors
 Adafruit_DCMotor *winch1 = AFMS.getMotor(1);
 Adafruit_DCMotor *winch2 = AFMS.getMotor(4);
 Adafruit_DCMotor *winch3 = AFMS2.getMotor(1);
 Adafruit_DCMotor *winch4 = AFMS2.getMotor(3);
+Adafruit_DCMotor *panMotor = AFMS2.getMotor(4);
 
 //PAN VARIABLES
 int panPot = A0;
-int panTopSpeed = 100;
+int panTopSpeed = 80;
 float panEncoderValue;    //IN DEGREES
-float panOffset = 94.9 + 20; //IN DEGREES
+float panOffset = 53.28; //IN DEGREES
 float panError = 0;  //IN DEGREES
 float panPGain = 10;
 float panDGain = 20;
@@ -63,7 +63,6 @@ bool reset = false;
 bool fire = false;
 bool arm = false;
 int armTarget = 0;
-
 int switchPressed = 0;
 
 String input;
@@ -221,7 +220,9 @@ void turnArmMotors(int motorSpeed) {
 void getInput() {
     //INPUT IN FORMAT a = 20, power = 30
     input = Serial.readString();
-    if(input == "fire"){
+    
+    separator = input.indexOf(".");
+    if(separator != -1){
       fire = true;
       Serial.println("FIRING!");
     }
@@ -231,7 +232,6 @@ void getInput() {
     }
     len = input.length()+1;
     separator = input.indexOf(",");
-    
     if (separator != -1){
       string1 = input.substring(0, separator);
       string2 = input.substring(separator+1, len);
@@ -251,7 +251,6 @@ void getInput() {
         Serial.print("Angle set to: ");
         Serial.println(panTarget);
       }
-      
       separator = string2.indexOf("=");
       len = string2.length()+1;
       ID = string2.substring(0, separator);
@@ -269,7 +268,24 @@ void getInput() {
           Serial.println("Negative Power Given, try agan");
         }
       }
-    }   
+      }else{
+        separator = input.indexOf("=");
+        len = input.length()+1;
+        ID = input.substring(0, separator);
+        stringvalue = input.substring(separator+1,len);
+        stringvalue.trim();
+        value = stringvalue.toInt();
+        ID.trim();
+        if(ID == "a"){
+          panTarget = value;
+          Serial.print("Angle set to: ");
+          Serial.println(panTarget);
+        }
+      }
+      Serial.flush();
+
+      
+       
 
 }
 

@@ -68,7 +68,7 @@ class Frost(object):
 
         #for self.serial output to arduino for launcher
         self.ser_out = serial.Serial()
-        self.ser_out.port = '/dev/ttyACM1'
+        self.ser_out.port = '/dev/ttyACM0'
         self.ser_out.baudrate = 115200
         self.ser_out.timeout = 1
         self.ser_out.writeTimeout = 0     #timeout for write
