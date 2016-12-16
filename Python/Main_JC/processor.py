@@ -41,8 +41,8 @@ class SerialOut(object):
     def __init__(self, ser_out):
         self.ser_out = ser_out
         self.prev_time = time.time()
-        self.time_to_arm = 6
-        self.time_to_shoot = 8
+        self.time_to_arm = 8
+        self.time_to_shoot = 12
         self.time_to_send_angle = .5
         self.prev_time_angle = time.time()
         self.arm_sent = False
@@ -63,15 +63,17 @@ class SerialOut(object):
             if(time.time() - self.prev_time_angle > self.time_to_send_angle):
                 self.ser_out.write("a = " + str(int(target_angle*1.15)))
                 self.prev_time_angle = time.time()
+                print (time.time() - self.prev_time)
 
             #if enough time has passed, send an angle and a distance to arm the launcher
+
             if (time.time() - self.prev_time) > self.time_to_arm:
                 if(not self.arm_sent):
                     self.arm_sent = True
+                #self.prev_time = time.time()
                     self.ser_out.write("a= " + str(int(target_angle)) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
                     print ("a= " + str(target_angle) + ", power = " + str(int(self.distance_to_motor_power(target_distance))))
-                    self.ser_out.write(".")
-
+                    #self.ser_out.write(".")
             #if enough time has passed, send a command to fire
             if(time.time() - self.prev_time) > self.time_to_shoot:
                 # self.ser_out.write(".")
@@ -85,7 +87,7 @@ class SerialOut(object):
         """
         performs a conversion to get distance into launcher specs
         """
-        return .1*(distance - 9.09)
+        return .0897*(distance - 3.7082)
 
 
 class LidarView(object):
@@ -102,9 +104,13 @@ class LidarView(object):
         self.angle_2 = 70
         self.target_angle = 0
         self.est_dist = 500
-        self.est_threshold = 30
+        #self.est_threshold = 30
         self.r_min = 1000
         self.target_found = False
+        self.data_wedge = []
+        self.left_angle_min = 500
+        self.right_angle_max = -500
+        self.distance_threshold = 20
 
 
     def draw(self, dataArray, target_data):
@@ -116,16 +122,22 @@ class LidarView(object):
         if(len(target_data) > 0):
             self.angle_1 = target_data[0][0] #left angle of first target
             self.angle_2 = target_data[0][1] #right angle of first target
-            self.target_angle = (self.angle_1 + self.angle_2)/2
+
             self.est_dist = target_data[0][2]
             self.target_found = True
         else:
             self.target_found = False
+            self.angle_1 = 0
+            self.angle_2 = 0
+            #self.target_angle = 0
 
         self.screen.fill(pygame.Color('grey'))
         self.r_min = 1000
 
         #assigns colors to all data points for visualizations, and also calculates the distance
+        # 3 sets of data wedge
+        self.data_wedge = []
+        
         for i, obj in enumerate(dataArray):
             if obj != None:
                 angle = obj[0]
@@ -133,6 +145,7 @@ class LidarView(object):
                     angle = angle-360
                 if angle>self.angle_1 and angle<self.angle_2:
                     dot_color = pygame.Color('green')
+                    self.data_wedge.append([angle, obj[1]])
                 else:
                     dot_color = pygame.Color('red')
                 """#makes angles nice
@@ -160,10 +173,29 @@ class LidarView(object):
                 y = int((obj[1]+3)*math.sin(obj[0]*math.pi/180)*self.scaling)
                 pygame.draw.circle(self.screen, dot_color, (self.center[0] - x, self.model.height -(self.center[1] - y)), 2)
 
-                #calculates distance by finding the closest point in the angle range of the target
-                if (dot_color==pygame.Color('green')):
-                    if obj[1]<self.r_min:
-                        self.r_min = obj[1]
+        #calculates distance by finding the closest point in the angle range of the target
+
+        if(len(self.data_wedge)> 0):
+            #sort data wedge by distance
+            self.data_wedge.sort(key=lambda x: int(x[1]))
+            #get first data_wedge distance
+            if(self.data_wedge[0][1] > 10):
+                self.r_min = self.data_wedge[0][1]
+            else:
+                self.r_min = self.data_wedge[1][1]
+            self.left_angle_min = 500
+            self.right_angle_max = -500
+            for i, obj in enumerate(self.data_wedge):
+                angle = obj[0]
+                if (abs(obj[1] - self.r_min) < self.distance_threshold):
+                    if(angle < self.left_angle_min):
+                        self.left_angle_min = angle
+                    if(angle > self.right_angle_max):
+                        self.right_angle_max = angle
+
+        #if (dot_color==pygame.Color('green')):
+        #    if obj[1]<self.r_min:
+        #        self.r_min = obj[1]
 
         #draws a radius to visualize distance of target from LIDAR                
         if self.target_found:
@@ -175,18 +207,19 @@ class LidarView(object):
                 # else:
                 #     pygame.draw.circle(self.screen, dot_color, (self.center[0] - x, self.model.height -(self.center[1] - y)), 2)
                 #print (x,y)
-
+        self.target_angle = ((self.right_angle_max + self.left_angle_min)/2)*.8
         #draws angle lines to signify what zone the target is in
         line1_x_pos = int(1000*math.cos(self.angle_1*math.pi/180))
         line1_y_pos = int(1000*math.sin(self.angle_1*math.pi/180))
         line2_x_pos = int(1000*math.cos(self.angle_2*math.pi/180))
         line2_y_pos = int(1000*math.sin(self.angle_2*math.pi/180))
-
+        line_target_x_pos = int(1000*math.cos(self.target_angle*math.pi/180))
+        line_target_y_pos = int(1000*math.sin(self.target_angle*math.pi/180))
         pygame.draw.circle(self.screen, pygame.Color('yellow'), (self.center[0], self.model.height - (self.center[1])), 3)
         if self.target_found:
             pygame.draw.line(self.screen, pygame.Color('green'), (self.center[0], self.model.height - (self.center[1])),(self.center[0]-line1_x_pos, self.model.height - (self.center[1]-line1_y_pos)),1)
             pygame.draw.line(self.screen, pygame.Color('green'), (self.center[0], self.model.height - (self.center[1])),(self.center[0]-line2_x_pos, self.model.height - (self.center[1]-line2_y_pos)),1)
-
+            pygame.draw.line(self.screen, pygame.Color('black'), (self.center[0], self.model.height - (self.center[1])), (self.center[0] - line_target_x_pos, self.model.height - (self.center[1] - line_target_y_pos)), 1)
         # if self.angle_1>self.angle_2:
         #     pygame.draw.arc(self.screen, pygame.Color('blue'), (self.center[0]-((self.est_dist+self.est_threshold)*self.scaling), self.model.height - (self.center[1])-((self.est_dist+self.est_threshold)*self.scaling),(self.est_dist+self.est_threshold)*2*self.scaling,(self.est_dist+self.est_threshold)*2*self.scaling),(self.angle_1-180)*(math.pi/180.),(self.angle_2+180)*(math.pi/180))
         #     pygame.draw.arc(self.screen, pygame.Color('blue'), (self.center[0]-((self.est_dist-self.est_threshold)*self.scaling), self.model.height - (self.center[1])-((self.est_dist-self.est_threshold)*self.scaling),(self.est_dist-self.est_threshold)*2*self.scaling,(self.est_dist-self.est_threshold)*2*self.scaling),(self.angle_1-180)*(math.pi/180.),(self.angle_2+180)*(math.pi/180))
@@ -195,6 +228,8 @@ class LidarView(object):
         #     pygame.draw.arc(self.screen, pygame.Color('blue'), (self.center[0]-((self.est_dist-self.est_threshold)*self.scaling), self.model.height - (self.center[1])-((self.est_dist-self.est_threshold)*self.scaling),(self.est_dist-self.est_threshold)*2*self.scaling,(self.est_dist-self.est_threshold)*2*self.scaling),(self.angle_1+180)*(math.pi/180.),(self.angle_2+180)*(math.pi/180))
 
         pygame.display.update()
+        if(self.r_min == 1000):
+            self.target_found = False
         return (self.target_found, -self.target_angle, self.r_min)
 
 

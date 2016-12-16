@@ -59,6 +59,7 @@ class Lidar(object):
         self.tempDistance = 0
         self.angle = 0
         self.distance = 0
+        self.sync_counter = 0;
 
 
     def get_reading(self):
@@ -67,19 +68,24 @@ class Lidar(object):
         """
         self.bytesRead = self.ser.inWaiting()
         data = self.ser.read()
-        
         if(len(data) > 0):
             if ((ord(data) == 0xCC) and (self.sync == 0)) :
                 self.sync+=1
+                #self.inSync = False
             elif ((ord(data) == 0xDD) and (self.sync == 1)) :
                 self.sync+=1
+                #self.inSync = False
             elif ((ord(data) == 0xEE) and (self.sync == 2)) :
                 self.sync+=1
+                #self.inSync = False
             elif ((ord(data) == 0xFF) and (self.sync == 3)) :
                 self.sync+=1
+                #print self.sync_counter
+                #print "synced"
             else:
+                #if(self.sync > 2):
+                #    self.ser.flushInput()
                 self.sync = 0
-
             if(self.inSync):
                 if(self.j == 0):
                     self.tempAngle = ord(data) << 8
@@ -102,9 +108,14 @@ class Lidar(object):
 
             if (self.sync == 4):
                 self.inSync = True
+                #self.sync_counter += 1
                 self.counter += 1
                 result = self.dataArray
                 self.dataArray = []
+                #if(self.sync_counter > 10):
+                #    self.ser.flushInput()
+                #    self.sync_counter = 0
+                self.j = 0
                 return result
 
         return None

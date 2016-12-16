@@ -1,5 +1,5 @@
 /*
- Prototype for Mini Launcher, does Pan and Power calculations
+ Final for big launcher, does Pan and Power calculations
  Uses PID for motor control of Pan, and has user input
  */
 #include <math.h>
@@ -32,17 +32,21 @@ Adafruit_DCMotor *panMotor = AFMS2.getMotor(4);
 int panPot = A0;
 int panTopSpeed = 80;
 float panEncoderValue;    //IN DEGREES
-float panOffset = 255; //IN VOLTAGE
+float panOffset = 267; //IN VOLTAGE
 float panError = 0;  //IN DEGREES
-float panPGain = 10;
-float panDGain = 20;
+float panPGain = 5;
+float panDGain = 25;
+float panIGain = .005;
+float panSumError = 0;
 float panDerivative = 0;
 float panProportional = 0;
+float panIntegral = 0;
+int panThreshold = 1;
 int panDt = 50;
 int panTarget = 0;
 int panMotorSpeed = 0;
-int panThreshold = 2;
 int prevTime = 0;
+float truePanSpeed = 0;
 
 //used in String parsing input
 int separator;
@@ -123,7 +127,7 @@ void getSensorData() {
   switchPressed = digitalRead(limitSwitchPin);
   //clockwise values are positive
   panEncoderValue = -voltageToDegrees(analogRead(panPot) - panOffset);
-  //Serial.println(panEncoderValue);
+  //Serial.println(analogRead(panPot));
   armEncoderValue = voltageToDegrees(analogRead(armPot) - armOffset);
   //Serial.println(armEncoderValue);
 }
@@ -155,10 +159,14 @@ void pan() {
     prevTime = millis();
   }
   panError = float(panTarget) - panEncoderValue;
+  //Serial.println(panError);
+  panSumError += panError;
   //Proportional Term of PID
+
+  panIntegral = panIGain * panSumError;
   panProportional = panPGain *  panError;
   //Calculate new motor speed
-  panMotorSpeed = panProportional + panDerivative;
+  panMotorSpeed = panProportional + panDerivative + panIntegral;
 
   if (panMotorSpeed > panTopSpeed) {
     panMotorSpeed = panTopSpeed;
@@ -166,7 +174,8 @@ void pan() {
   if (panMotorSpeed < -panTopSpeed) {
     panMotorSpeed = -panTopSpeed;
   }
-  if (abs(panError) < abs(panThreshold)) {
+  if(abs(panError) < panThreshold){
+    panSumError = 0;
     panMotorSpeed = 0;
   }
   //Serial.println(panError);
@@ -177,11 +186,16 @@ void pan() {
 //Function for turning the Pan Motor
 void turnpanMotor(int motorSpeed) {
   //Rotates the motors
-  if (motorSpeed > 0) {
-    panMotor->setSpeed(motorSpeed);
+  if(truePanSpeed > motorSpeed){
+    truePanSpeed -= .5;
+  }else if(truePanSpeed < motorSpeed){
+    truePanSpeed += .5;
+  }
+  if (int(truePanSpeed) > 0) {
+    panMotor->setSpeed(int(truePanSpeed) );
     panMotor->run(BACKWARD);
-  } else if (motorSpeed < 0) {
-    panMotor->setSpeed(abs(motorSpeed));
+  } else if (truePanSpeed  < 0) {
+    panMotor->setSpeed(abs(int(truePanSpeed)));
     panMotor->run(FORWARD);
   } else {
     panMotor ->run(RELEASE);
