@@ -9,20 +9,24 @@
 #include <Adafruit_MotorShield.h>
 //#include "utility/Adafruit_PWMServoDriver.h"
 
-Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 
-#define limitSwitchPin 1
+
+#define limitSwitchPin 2
 //Servo
 Servo latch1; //70 locked 110 unlocked
 Servo latch2; //100 locked 55 unlocked
 
+//MOTORS
+Adafruit_MotorShield AFMS(0x60);// = Adafruit_MotorShield();
+Adafruit_MotorShield AFMS2(0x61);// = Adafruit_MotorShield();
 //Pan Motor
 Adafruit_DCMotor *panMotor = AFMS.getMotor(3);
 
 //Winch Motors
 Adafruit_DCMotor *winch1 = AFMS.getMotor(1);
-Adafruit_DCMotor *winch2 = AFMS.getMotor(2);
-Adafruit_DCMotor *winch3 = AFMS.getMotor(4);
+Adafruit_DCMotor *winch2 = AFMS.getMotor(4);
+Adafruit_DCMotor *winch3 = AFMS2.getMotor(1);
+Adafruit_DCMotor *winch4 = AFMS2.getMotor(3);
 
 //PAN VARIABLES
 int panPot = A0;
@@ -53,12 +57,14 @@ int Distance;
 //ARM VARIABLES
 int armPot = A1;
 float armEncoderValue;
-float armOffset = 41
+float armOffset = 44
 ; //IN DEGREES
 bool reset = false;
 bool fire = false;
 bool arm = false;
 int armTarget = 0;
+
+int switchPressed = 0;
 
 String input;
 
@@ -71,6 +77,7 @@ void setup() {
 
   //sets up motors
   AFMS.begin();
+  AFMS2.begin();
   
   latch1.attach(9);
   latch2.attach(10);
@@ -94,7 +101,6 @@ void loop() {
     getInput();
   }
   pan();
-
   if(reset && arm){
     armLauncher();
   }
@@ -114,11 +120,12 @@ void loop() {
 
 //reads current values of encoders for control
 void getSensorData() {
-
+  //DO NOT COMMENT OUT SWITCH PRESSED
+  switchPressed = digitalRead(limitSwitchPin);
   panEncoderValue = voltageToDegrees(analogRead(panPot)) - panOffset;
   //Serial.println(panEncoderValue);
   armEncoderValue = voltageToDegrees(analogRead(armPot)) - armOffset;
-  Serial.println(armEncoderValue);
+  //Serial.println(armEncoderValue);
 }
 
 
@@ -186,20 +193,25 @@ void turnArmMotors(int motorSpeed) {
     winch1->setSpeed(motorSpeed);
     winch2->setSpeed(motorSpeed);
     winch3->setSpeed(motorSpeed);
-    winch1->run(FORWARD);
+    winch4->setSpeed(motorSpeed);
+    winch1->run(BACKWARD);
     winch2->run(FORWARD);
-    winch3->run(FORWARD);
+    winch3->run(BACKWARD);
+    winch4->run(FORWARD);
   } else if (motorSpeed < 0) {
     winch1->setSpeed(abs(motorSpeed));
     winch2->setSpeed(abs(motorSpeed));
-    winch3->setSpeed(motorSpeed);
-    winch1->run(BACKWARD);
+    winch3->setSpeed(abs(motorSpeed));
+    winch4->setSpeed(abs(motorSpeed));
+    winch1->run(FORWARD);
     winch2->run(BACKWARD);
-    winch3->run(BACKWARD);
+    winch3->run(FORWARD);
+    winch4->run(BACKWARD);
   } else {
     winch1->run(RELEASE);
     winch2->run(RELEASE);
     winch3->run(RELEASE);
+    winch4->run(RELEASE);
   }
 }
 
@@ -264,16 +276,19 @@ void getInput() {
 
 //Arm motors move back to set distance using essentially bang bang control
 void armLauncher() {
-  if(armTarget > 50){
-    armTarget = 50;
+  if(armTarget > 60){
+    armTarget = 60;
   }
-  if(armEncoderValue < armTarget){
-    turnArmMotors(100);
+  if(armEncoderValue < armTarget && switchPressed == 0){
+    turnArmMotors(150);
   }
   else{
     fire = true;
     arm = false;
     turnArmMotors(10);
+    if(switchPressed == 1){
+      Serial.println("Limit Reached");
+    }
   }
 }
 
@@ -282,9 +297,13 @@ void armLauncher() {
 //Re-arms the launcher using essentially bang bang control
 void resetLauncher() {
   if (armEncoderValue > 0){
-    turnArmMotors(-60);
+    turnArmMotors(-200);
   }else{
+    delay(20);
+    turnArmMotors(1);
+    delay(10);
     turnArmMotors(0);
+    delay(200);
     reset = true;
     activateLatch();
     delay(100);
@@ -294,13 +313,12 @@ void resetLauncher() {
 
 //Arm Functions
 void activateLatch() {
-  latch2.detach();
-  latch1.detach();
-  //latch2.write(100);
-  //latch1.write(70);
+  //latch2.detach();
+  //latch1.detach();
+  latch2.write(95);
+  latch1.write(60);
 }
 void fireLauncher() {
-  //latch2.write(55);
-  //latch1.write(110);
+  latch2.write(55);
+  latch1.write(110);
 }
-
