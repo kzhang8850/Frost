@@ -50,7 +50,8 @@
 #include <Wire.h>
 #include "LIDARLite.h"
 #include "TimerOne.h"
-
+#include <ros.h>
+#include <std_msgs/UInt8.h>
 
 int pinLidarMode   = 4;
 int pinEncoderPos  = 3;
@@ -77,6 +78,11 @@ unsigned long nextInfoTime = 0;
 unsigned long rotationCounter = 0;
 int angleMax = 0;
 int angleMin = 30000;
+
+
+ros::NodeHandle nh;
+std_msgs::UInt8 hex_msg;
+ros::Publisher chatter("chatter", &hex_msg);
 
 
 void timer(){
@@ -126,6 +132,8 @@ void setup() {
   Timer1.initialize(1000000); // 1 second
   Timer1.attachInterrupt(timer);  
   
+  nh.advertise(chatter);
+  nh.initNode();
   //Serial.println("Ready");
   attachInterrupt(digitalPinToInterrupt(pinEncoderPos), encoderTick, CHANGE);
 }
@@ -168,11 +176,14 @@ void loop() {
         measurements++;
       }*/      
       // send zero sync
-      Serial.write(0xCC);  
-      Serial.write(0xDD);
-      Serial.write(0xEE);
-      Serial.write(0xFF);
-      Serial.flush();
+      hex_msg.data = 0xCC;
+      chatter.publish(&hex_msg);
+      hex_msg.data = 0xDD;
+      chatter.publish(&hex_msg);
+      hex_msg.data = 0xEE;
+      chatter.publish(&hex_msg);
+      hex_msg.data = 0xFF;
+      chatter.publish(&hex_msg);
     } else {
       //Serial.println(rotationCounter);
       //Serial.flush();
@@ -182,11 +193,14 @@ void loop() {
   }
 
   if (mode == MODE_NORMAL){
-    Serial.write(v >> 8);
-    Serial.write(v & 0xFF);
-    Serial.write(d >> 8);
-    Serial.write(d & 0xFF);
-    Serial.flush();
+    hex_msg.data = v >> 8;
+    chatter.publish(&hex_msg);
+    hex_msg.data = v & 0xFF;
+    chatter.publish(&hex_msg);
+    hex_msg.data = d >> 8;
+    chatter.publish(&hex_msg);
+    hex_msg.data = d & 0xFF;
+    chatter.publish(&hex_msg);
   } 
   else {
   
@@ -218,4 +232,5 @@ void loop() {
     }    
   }
   measurements++;
+  nh.spinOnce();
 } 
