@@ -1,0 +1,142 @@
+<!DOCTYPE HTML>
+
+<html>
+	<head>
+		<title>Sensors</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
+	</head>
+	<body>
+		<div id="page-wrapper">
+
+			<!-- Header -->
+                <header id="header">
+                    <nav id="nav">
+                        <ul>
+                            <li><a href="index.html" class="button">Home</a></li>
+                            <li><a href="team.html" class="button">The Team</a></li>
+                            <li>
+                                <a href="#" class="icon fa-angle-down">Learn More</a>
+                                <ul>
+                                    <li><a href="system_overview.html">System Overview</a></li>
+                                    <li>
+                                        <a href="how_it_works.html">How it works</a>
+                                        <ul>
+                                            <li><a href="mechanical.html">Mechanical</a></li>
+                                            <li><a href="electrical.html">Electrical</a></li>
+                                            <li><a href="software.html">Software</a></li>
+                                            <li><a href="firmware.html">Firmware</a></li>
+                                            <li><a href="prototype.html">Prototype</a></li>
+                                            <li><a href="sensors.html">Sensors</a></li>
+                                        </ul>
+                                    </li>
+                                    <li><a href="budget.html">Budget</a></li>
+                                    <li><a href="journey.html">Our Story</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </nav>
+                </header>
+			<!-- Main -->
+				<section id="main" class="container">
+					<header>
+						<h2>Sensors</h2>
+						<p>Frost uses a variety of different sensors, for both understanding its surroundings and understanding itself. These sensors are what give Frost intelligence and are what make Frost autonomous.</p>
+					</header>
+                    
+                    <div class="row">
+						<div class="12u">
+                            <div class="box">
+                                <h3>Encoders</h3>
+                                <p>There are two potentiometers on the launcher that act as encoders for sensing what angle the pan motor and arm motors are at. This ensures for proper interfacing with the currently read angle and the set point angle from the received data of angle and distance. The encoders are critical for the PID control and Bang-Bang control in the launcher’s Firmware to work, as they tell the launcher how much more it needs to move before it hits the set point. These thus help Frost understand its own orientation and adjust accordingly.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+						<div class="12u">
+                            <div class="box">
+                                <h3>Lidar</h3>
+                                <!--<div class="row">
+                                    <iframe height="500" class="image fit" src="https://www.youtube.com/embed/cUEJAdhIl0o?rel=0&autoplay=0" frameborder="0" allowfullscreen onload="resizeIframe(this)"></iframe>
+                                </div>-->
+                                <p>The LIDAR is a spinning distance sensor, in order to grab a live 2D scan of its surroundings. We created one from a Lidar Lite V3 linear distance sensor. We used 3 small DC motors to spin the whole contraption. A photo interrupter and encoder wheel can determine the LIDAR’s position. The encoder wheel has a slightly larger hole than the others. This way, we can determine the LIDAR’s zero position for syncing and calibration. The housing and internals are mainly 3D printed, with the exception of the bottom plate and encoder wheel. The LIDAR’s data is used in the LIDAR module, where the readings are converted from hexadecimal measurements to base 10 numbers for angle and distance. The LIDAR sits at the front of the robot near the Kinect, acting as stereoscopic vision to the eyes. This is the main sensor that allows Frost to sense its environment.<br/><br/>We referenced <a href="http://grauonline.de/wordpress/?page_id=1233">this page</a> to make our Lidar</p>
+                                <div class="row">
+                                    <video class="image fit" controls>
+                                        <source src="videos/lidar_2.mp4" type="video/mp4">
+                                    </video>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--<div class="row">
+                        <div class="12u">
+                            <div class="box">
+                                <section class="box">
+									<h3>Image</h3>
+									<span class="image fit"><img src="images/Lidar/Lidar_1.jpg" alt="" /></span>
+									<div class="box alt">
+										<div class="row no-collapse 50% uniform">
+											<div class="4u"><span class="image fit"><img src="images/Lidar/Lidar_1.jpg" alt="" /></span></div>
+											<div class="4u"><span class="image fit"><img src="images/Lidar/Lidar_2.jpg" alt="" /></span></div>
+											<div class="4u"><span class="image fit"><img src="images/Lidar/Lidar_3.jpg" alt="" /></span></div>
+										</div>
+										<div class="row no-collapse 50% uniform">
+											<div class="4u"><span class="image fit"><img src="images/Lidar/Lidar_1.jpg" alt="" /></span></div>
+											<div class="4u"><span class="image fit"><img src="images/Lidar/Lidar_2.jpg" alt="" /></span></div>
+											<div class="4u"><span class="image fit"><img src="images/Lidar/Lidar_3.jpg" alt="" /></span></div>
+										</div>
+										<div class="row no-collapse 50% uniform">
+											<div class="4u"><span class="image fit"><img src="images/Lidar/Lidar_1.jpg" alt="" /></span></div>
+											<div class="4u"><span class="image fit"><img src="images/Lidar/Lidar_2.jpg" alt="" /></span></div>
+											<div class="4u"><span class="image fit"><img src="images/Lidar/Lidar_3.jpg" alt="" /></span></div>
+										</div>
+									</div>
+								</section>
+                            </div>
+                        </div>
+                    </div>-->
+                    <div class="row">
+                        <div class="12u">
+                            <div class="box">
+                                <section class="box">
+									<h3>Kinect</h3>
+									<span class="image fit"><img src="images/Software/kinect.jpg" alt="" /></span>
+                                    <p style="font-size:1.2em;">The Kinect actually has multiple different sensors, including a camera and two infrared sensors. Because the infrared sensors don’t have the range needed for our project, we only utilize the functionality of the camera. The Kinect camera is used in the Body Detection module in Software to find and track human bodies. The camera sits at the front of the launcher and thus is placed in a way to match human eyes for maximum functionality. This is the main sensor that allows Frost to differentiate its environment and tell what is what.</p>
+								</section>
+                            </div>
+                        </div>
+                    </div>
+				</section>
+            
+                <footer id="footer">
+                    <ul class="copyright">
+                        <li>
+                            <a href="http://poe.olin.edu/">Principles of Engineering Fall 2016
+                            </a>
+                        </li>
+                        <li>
+                            <a href="http://www.olin.edu/">Olin College</a>
+                        </li>
+                        <li>
+                            Designed with
+                            <a href="http://html5up.net">HTML5 UP</a>
+                        </li>
+                    </ul>
+                </footer>
+		</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.dropotron.min.js"></script>
+			<script src="assets/js/jquery.scrollgress.min.js"></script>
+			<script src="assets/js/skel.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>

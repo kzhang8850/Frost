@@ -1,0 +1,96 @@
+<!DOCTYPE HTML>
+
+<html>
+	<head>
+		<title>Firmware</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
+	</head>
+	<body>
+		<div id="page-wrapper">
+
+			<!-- Header -->
+                <header id="header">
+                    <nav id="nav">
+                        <ul>
+                            <li><a href="index.html" class="button">Home</a></li>
+                            <li><a href="team.html" class="button">The Team</a></li>
+                            <li>
+                                <a href="#" class="icon fa-angle-down">Learn More</a>
+                                <ul>
+                                    <li><a href="system_overview.html">System Overview</a></li>
+                                    <li>
+                                        <a href="how_it_works.html">How it works</a>
+                                        <ul>
+                                            <li><a href="mechanical.html">Mechanical</a></li>
+                                            <li><a href="electrical.html">Electrical</a></li>
+                                            <li><a href="software.html">Software</a></li>
+                                            <li><a href="firmware.html">Firmware</a></li>
+                                            <li><a href="prototype.html">Prototype</a></li>
+                                            <li><a href="sensors.html">Sensors</a></li>
+                                        </ul>
+                                    </li>
+                                    <li><a href="budget.html">Budget</a></li>
+                                    <li><a href="journey.html">Our Story</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </nav>
+                </header>
+			<!-- Main -->
+				<section id="main" class="container">
+					<header>
+						<h2>Firmware</h2>
+                        <p>Our Firmware Codebase consists mainly of the two Arduinos that link up to the two actuated components of our system: the LIDAR and the Launcher. The dependency for our firmware is the Adafruit Motorshield library.<br/><br/><strong>View our Firmware code </strong><a href="https://github.com/kzhang8850/Frost/tree/master/Arduino">here</a></p>
+					</header>
+                    
+                    <div class="row">
+						<div class="12u">
+                            <div class="box">
+                                <h3>LIDAR Arduino</h3>
+                                <p>An Arduino is used to grab data from the LIDAR to send to the computer. The LIDAR sends distance data, while a photo interrupter and encoder wheel determines the angle that the LIDAR is currently positioned at. After sending a syncing sequence, the Arduino packages the angle and corresponding distance data into four hexadecimal numbers. This way, we can send a lot of data in a very small amount of space.</p>
+                                <span class="image fit"><img src="images/Lidar/pygame%20window.png" alt="" /></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+						<div class="12u">
+                            <div class="box">
+                                <h3>Launcher Arduino</h3>
+                                <p>The Arduino for the launcher is the actuated output of the system. It takes the processed data from the Main Module in Software over serial connection, which consists of an angle for the pan motor and a distance for the arm motor. The pan motor uses PID control; when an angle is received over serial, that angle becomes the set point for the PID control, and the pan motor moves the launcher to align with the  set point referencing input from the pan encoder. The distance is used by the arm motor, which will pull back the arm of the launcher to the set point given by the distance using Bang-Bang control referencing input from the arm encoder. In the main loop, the pan will constantly move towards the set point given by received data. The launcher performs a specific sequence of actions to ensure that the arm will arm, fire, and re-arm in that order. Once the arm shoots and is re-arming, the pan mechanism will wait until it’s ready again. These steps continue as long as the robot is active. If at any time, the user wishes to manually control the launcher for debugging purposes or just manual control, there exists an input mechanism that can access the launcher’s control mechanisms at any time.</p>
+                            </div>
+                        </div>
+                    </div>
+ 				</section>
+            
+                <footer id="footer">
+                    <ul class="copyright">
+                        <li>
+                            <a href="http://poe.olin.edu/">Principles of Engineering Fall 2016
+                            </a>
+                        </li>
+                        <li>
+                            <a href="http://www.olin.edu/">Olin College</a>
+                        </li>
+                        <li>
+                            Designed with
+                            <a href="http://html5up.net">HTML5 UP</a>
+                        </li>
+                    </ul>
+                </footer>
+		</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.dropotron.min.js"></script>
+			<script src="assets/js/jquery.scrollgress.min.js"></script>
+			<script src="assets/js/skel.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>

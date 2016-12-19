@@ -1,0 +1,95 @@
+<!DOCTYPE HTML>
+
+<html>
+	<head>
+		<title>System Overview</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
+	</head>
+	<body>
+		<div id="page-wrapper">
+
+			<!-- Header -->
+                <header id="header">
+                    <nav id="nav">
+                        <ul>
+                            <li><a href="index.html" class="button">Home</a></li>
+                            <li><a href="team.html" class="button">The Team</a></li>
+                            <li>
+                                <a href="#" class="icon fa-angle-down">Learn More</a>
+                                <ul>
+                                    <li><a href="system_overview.html">System Overview</a></li>
+                                    <li>
+                                        <a href="how_it_works.html">How it works</a>
+                                        <ul>
+                                            <li><a href="mechanical.html">Mechanical</a></li>
+                                            <li><a href="electrical.html">Electrical</a></li>
+                                            <li><a href="software.html">Software</a></li>
+                                            <li><a href="firmware.html">Firmware</a></li>
+                                            <li><a href="prototype.html">Prototype</a></li>
+                                            <li><a href="sensors.html">Sensors</a></li>
+                                        </ul>
+                                    </li>
+                                    <li><a href="budget.html">Budget</a></li>
+                                    <li><a href="journey.html">Our Story</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </nav>
+                </header>
+			<!-- Main -->
+				<section id="main" class="container">
+					<header>
+						<h2>System Overview</h2>
+					</header>
+                    
+                    <div class="row">
+                            <div class="12u">
+                                <section class="box">
+                                    <h3>Project Summary</h3>
+                                    <p>Our objective was to create a robot that could automatically fire snowballs at people without manual input from another human being. The current project state is an autonomous robot that utilizes a Kinect camera and a LIDAR to create a projection map of its field of vision, interfacing the two data streams to find people and determine their location. The robot then actuates a pan motor to align itself with the target, and then a catapult is armed and released to fire a snowball towards the target location. The robot can then automatically re-arm itself and begin looking to find the next target and fire again.</p>
+                                </section>
+                            </div>
+                    </div>
+                    <div class="row">
+                            <div class="12u">
+                                <section class="box">
+                                    <h3>System Diagram</h3>
+                                    <p>Three Python scripts, two Arduino microcontrollers, and a helper module are used to make Frost work. One Python script receives image inputs from the Kinect camera. A second Python script receives data from the Arduino attached to the LIDAR via serial connection. Both of these scripts then feed into a main script that collects the data from both modules and combines them using a helper module. The algorithm then makes a decision that is sent to the Arduino controlling the actuators on the launcher via serial connection to pan and launch the catapult towards the target.</p>
+                                    <span class="image fit"><img src="images/system_diagram.JPG" alt="" /></span>
+                                </section>
+                            </div>
+                    </div>
+ 				</section>
+            
+                <footer id="footer">
+                    <ul class="copyright">
+                        <li>
+                            <a href="http://poe.olin.edu/">Principles of Engineering Fall 2016
+                            </a>
+                        </li>
+                        <li>
+                            <a href="http://www.olin.edu/">Olin College</a>
+                        </li>
+                        <li>
+                            Designed with
+                            <a href="http://html5up.net">HTML5 UP</a>
+                        </li>
+                    </ul>
+                </footer>
+		</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.dropotron.min.js"></script>
+			<script src="assets/js/jquery.scrollgress.min.js"></script>
+			<script src="assets/js/skel.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>
