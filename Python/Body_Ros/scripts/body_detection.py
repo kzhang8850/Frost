@@ -13,12 +13,15 @@ Written by Kevin Zhang
 ################################################################################################################################
 
 import numpy as np
+import time
 import cv2
 import freenect
+import roslib; roslib.load_manifest('frost_body')
 import rospy
+from sensor_msgs.msg import Image
 from frost_body.msg import Rect
 from frost_body.msg import Rect_Array
-
+from cv_bridge import CvBridge, CvBridgeError
 
 class BodyDetector(object):
 	"""
@@ -26,18 +29,15 @@ class BodyDetector(object):
 	"""
 	def __init__(self, init = False):
 
-		if not init:
-			rospy.init_node('body_detection', anonymous = True)
-
+		#if not init:
+		rospy.init_node('frost_body', anonymous = True)
 		#subscribing to edwin_bodies, from Kinect
-		rospy.Subscriber('/camera/rgb/image_raw', self.kinect_callback, queue_size=10)
-		
+		rospy.Subscriber('/camera/rgb/image_raw', Image, self.kinect_callback, queue_size=10)
 		#setting up ROS publishers to Edwin commands
-		self.body_pub = rospy.Publisher('tracked_people', Rect_Array, queue_size=10)
-
+		#self.body_pub = rospy.Publisher('tracked_people', Rect_Array, queue_size=10)
+		self.bridge = CvBridge()
 		#image from Kinect
 		self.frame = []
-
 		#parameters for tuning speed vs performance
 		self.winStride = (4,4)
 		self.padding = (16,16)
@@ -61,7 +61,16 @@ class BodyDetector(object):
 		"""
 		gets video frame from Kinect using ROS
 		"""
-		self.frame = list(image.data)
+		try:
+			self.frame = self.bridge.imgmsg_to_cv2(image, "bgr8")
+
+			#cv2.namedWindow("frame", 0)
+			#cv2.imshow('frame', self.frame)
+		except CvBridgeError as e:
+			print(e)
+		#cv2.resizeWindow('frame', 320, 240)
+		#cv2.imshow('frame',self.frame)
+		#cv2.waitKey(1)
 		self.find_bodies()
 
 
@@ -89,22 +98,21 @@ class BodyDetector(object):
 			self.history.pop(0)
 			if reality:
 				self.history.append(self.people_ranges)
-
 		#draws frame
-		cv2.namedWindow('frame', 0)
+		#cv2.namedWindow('frame', 0)
 		cv2.resizeWindow('frame', 320, 240)
+		cv2.imshow('frame',self.frame)
+		cv2.waitKey(1)
 
-		cv2.imshow('frame',frame)
-
-		for (x, y, w, h) in self.people_ranges:
+		"""for (x, y, w, h) in self.people_ranges:
 			self.people_ranges = Rect()
 			self.people_ranges.x = x
 			self.people_ranges.y = y
 			self.people_ranges.w = w
 			self.people_ranges.h = h
-			self.people.Rect_Array.append(self.people_ranges)
+			self.people.Rect_Array.append(self.people_ranges)"""
 
-		self.body_pub.publish(self.people)
+		#self.body_pub.publish(self.people)
 
 		return self.people_ranges
 
@@ -190,16 +198,21 @@ class BodyDetector(object):
 		return boxes[pick].astype("int")
 
 
-	def run(self):
+	#def run(self):
 		"""
         main run function for body_detection
         """
-		r = rospy.Rate(10)
-		time.sleep(1)
-		while rospy.not_shutdown():
+	"""	r = rospy.Rate(100)
+		#time.sleep(1)
+		while not rospy.is_shutdown():
 			r.sleep()
-
+"""
 
 if __name__ == "__main__":
 	Bodies = BodyDetector()
-	Bodies.run()
+	#Bodies.run()
+	try:
+		rospy.spin()
+	except KeyboardInterrupt:
+		print "shutting Down"
+	cv2.DestroyAllWindows()
