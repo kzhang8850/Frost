@@ -18,7 +18,7 @@ import cv2
 import freenect
 from multiprocessing import Process
 import rospy
-from std_msgs.msg import String, Int16
+from body_detection.msgs import Rect, Rect_Array
 
 class BodyThread(Process):
 	"""
@@ -53,18 +53,13 @@ class BodyDetector(object):
             rospy.init_node('frost_tracking', anonymous = True)
 
 		#subscribing to edwin_bodies, from Kinect
-        rospy.Subscriber('kinect', self.kinect_callback, queue_size=10)
-
-        #subscribing to edwin_wave, from Kinect
-        rospy.Subscriber('wave_at_me', Int16, self.wave_callback, queue_size=10)
-
-        #subsrcibing to st.py's arm_debug, from Edwin
-        rospy.Subscriber('arm_debug', String, self.edwin_location, queue_size=10)
+        rospy.Subscriber('/camera/rgb/image_raw', self.kinect_callback, queue_size=10)
 
         #setting up ROS publishers to Edwin commands
-        self.behavior_pub = rospy.Publisher('behaviors_cmd', String, queue_size=10)
-        self.arm_pub = rospy.Publisher('arm_cmd', String, queue_size=1)
+        self.body_pub = rospy.Publisher('tracked_people', Rect_Array, queue_size=10)
 
+		#image from Kinect
+		self.frame = []
 
 		#parameters for tuning speed vs performance
 		self.winStride = (4,4)
@@ -72,44 +67,40 @@ class BodyDetector(object):
 		self.scale = 1.03
 		self.meanShift = False
 
-		self.cam = None
-
-		########TOGGLE THIS TO CHANGE VIDEO INPUT
-		# self.cam = cv2.VideoCapture()
+		#ML library from OpenCV
 		self.hog = cv2.HOGDescriptor()
-
-		#variables for tracking people
-		self.history = [] #maintains a rectangle in occasional dropped frames
-		self.people_ranges = []
-
 		self.hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
 
-	def get_video(self):
+		#variables for tracking people
+		self.history = [] #maintains a rectangle in occasional dropped frames
+
+		#data to publish
+		self.people = Rect_Array()
+		self.people_ranges = None
+
+
+	def kinect_callback(self, image):
 		"""
-		gets video frame if video capture is currently from Kinect
+		gets video frame from Kinect using ROS
 		"""
-		array,_ = freenect.sync_get_video()
-		array = cv2.cvtColor(array,cv2.COLOR_RGB2BGR)
-		return array
+		self.frame = list(image.data)
+		self.find_bodies()
 
 
 	def find_bodies(self):
 		"""
 		uses HOG and non-max supression to calculate where people are in the frame, if any
 		"""
-		########TOGGLE THESE TWO LINES TO CHANGE VIDEO INPUT
-		#ret, frame = self.cam.read()
-		frame = self.get_video()
 
-		frame = cv2.resize(frame, (320, 240))
+		self.frame = cv2.resize(self.frame, (320, 240))
 
 		#finds people
-		(rects, weights) = self.hog.detectMultiScale(frame, winStride=self.winStride,
+		(rects, weights) = self.hog.detectMultiScale(self.frame, winStride=self.winStride,
 		padding=self.padding, scale=self.scale, useMeanshiftGrouping=self.meanShift)
 
 		#return a list of rectangles that tell where people are
-		reality, self.people_ranges = self.draw_rectangles(rects,frame)
+		reality, self.people_ranges = self.draw_rectangles(rects,self.frame)
 
 		#updates history to help smooth over drops in frames
 		if len(self.history) < 50:
@@ -127,6 +118,16 @@ class BodyDetector(object):
 		cv2.resizeWindow('frame', 320, 240)
 
 		cv2.imshow('frame',frame)
+
+		for (x, y, w, h) in self.people_ranges:
+			self.people_ranges = Rect()
+			self.people_ranges.x = x
+			self.people_ranges.y = y
+			self.people_ranges.w = w
+			self.people_ranges.h = h
+			self.people.Rect_Array.append(self.people_ranges)
+
+		self.body_pub.publish(self.people)
 
 		return self.people_ranges
 
@@ -150,15 +151,6 @@ class BodyDetector(object):
 			for (x, y, w, h) in rects:
 				cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 			return (1, rects)
-
-
-	def shut_down(self):
-		"""
-		closes down opencv
-		"""
-		if self.cam is None:
-			self.cam.release()
-		cv2.destroyAllWindows()
 
 
 	# Malisiewicz et al.
@@ -221,16 +213,18 @@ class BodyDetector(object):
 		return boxes[pick].astype("int")
 
 
+	def run(self):
+        """
+        main run function for body_detection
+        """
+        r = rospy.Rate(10)
+        time.sleep(1)
+
+        while rospy.not_shutdown():
+
+            r.sleep()
+
+
 if __name__ == "__main__":
 	Bodies = BodyDetector()
-
-	while True:
-
-		crowd = Bodies.find_bodies()
-
-		k = cv2.waitKey(30) & 0xff
-
-		if k == 27:
-
-			break
-	Bodies.shut_down()
+	Bodies.run()
