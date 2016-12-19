@@ -12,13 +12,13 @@ Written by Kevin Zhang
 """
 ################################################################################################################################
 
-
 import numpy as np
 import cv2
 import freenect
 from multiprocessing import Process
 import rospy
-from body_detection.msgs import Rect, Rect_Array
+from frost_body.msg import Rect
+from frost_body.msg import Rect_Array
 
 class BodyThread(Process):
 	"""
@@ -47,16 +47,16 @@ class BodyDetector(object):
 	"""
 	main class for Kinect's computer vision, finds and tracks bodies within field of vision
 	"""
-	def __init__(self):
+	def __init__(self, init = False):
 
 		if not init:
-            rospy.init_node('frost_tracking', anonymous = True)
+			rospy.init_node('body_detection', anonymous = True)
 
 		#subscribing to edwin_bodies, from Kinect
-        rospy.Subscriber('/camera/rgb/image_raw', self.kinect_callback, queue_size=10)
-
-        #setting up ROS publishers to Edwin commands
-        self.body_pub = rospy.Publisher('tracked_people', Rect_Array, queue_size=10)
+		rospy.Subscriber('/camera/rgb/image_raw', self.kinect_callback, queue_size=10)
+		
+		#setting up ROS publishers to Edwin commands
+		self.body_pub = rospy.Publisher('tracked_people', Rect_Array, queue_size=10)
 
 		#image from Kinect
 		self.frame = []
@@ -214,15 +214,13 @@ class BodyDetector(object):
 
 
 	def run(self):
-        """
+		"""
         main run function for body_detection
         """
-        r = rospy.Rate(10)
-        time.sleep(1)
-
-        while rospy.not_shutdown():
-
-            r.sleep()
+		r = rospy.Rate(10)
+		time.sleep(1)
+		while rospy.not_shutdown():
+			r.sleep()
 
 
 if __name__ == "__main__":

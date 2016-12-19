@@ -12,7 +12,6 @@ Written by Kevin Zhang, Cedric Kim, and Jeremy Garcia
 """
 ################################################################################################################################
 
-
 import time
 import serial
 import pygame
@@ -23,6 +22,7 @@ import numpy as np
 import os
 import rospy
 from frost_lidar.msg import Polar_Array
+
 
 def distance_to_motor_power(self, distance):
     """
