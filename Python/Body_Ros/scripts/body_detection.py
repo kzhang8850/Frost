@@ -17,20 +17,21 @@ import numpy as np
 import cv2
 import freenect
 import rospy
-from body_detection.msgs import Rect, Rect_Array
+from frost_body.msg import Rect, Rect_Array
+import time
 
 
 class BodyDetector(object):
 	"""
 	main class for Kinect's computer vision, finds and tracks bodies within field of vision
 	"""
-	def __init__(self):
+	def __init__(self, init = False):
 
 		if not init:
-            rospy.init_node('frost_tracking', anonymous = True)
+			rospy.init_node('frost_body', anonymous = True)
 
-        #setting up ROS publishers to Edwin commands
-        self.body_pub = rospy.Publisher('tracked_people', Rect_Array, queue_size=10)
+		#setting up ROS publishers to Edwin commands
+		self.body_pub = rospy.Publisher('tracked_people', Rect_Array, queue_size=10)
 
 		#image from Kinect
 		self.frame = []
@@ -50,6 +51,7 @@ class BodyDetector(object):
 		self.history = [] #maintains a rectangle in occasional dropped frames
 
 		#data to publish
+		self.people_rects = []
 		self.people = Rect_Array()
 		self.people_ranges = None
 
@@ -77,36 +79,38 @@ class BodyDetector(object):
 		padding=self.padding, scale=self.scale, useMeanshiftGrouping=self.meanShift)
 
 		#return a list of rectangles that tell where people are
-		reality, self.people_ranges = self.draw_rectangles(rects,self.frame)
+		reality, self.people_rects = self.draw_rectangles(rects,self.frame)
 
 		#updates history to help smooth over drops in frames
 		if len(self.history) < 50:
 			if reality:
-				self.history.append(self.people_ranges)
+				self.history.append(self.people_rects)
 			else:
 				self.history.pop(0)
 		else:
 			self.history.pop(0)
 			if reality:
-				self.history.append(self.people_ranges)
+				self.history.append(self.people_rects)
 
 		#draws frame
 		cv2.namedWindow('frame', 0)
 		cv2.resizeWindow('frame', 320, 240)
 
-		cv2.imshow('frame',frame)
+		cv2.imshow('frame',self.frame)
+		cv2.waitKey(1)
 
-		for (x, y, w, h) in self.people_ranges:
-			self.people_ranges = Rect()
-			self.people_ranges.x = x
-			self.people_ranges.y = y
-			self.people_ranges.w = w
-			self.people_ranges.h = h
-			self.people.Rect_Array.append(self.people_ranges)
+		self.people = Rect_Array()
+		if self.people_rects is not None:
+			for (x, y, w, h) in self.people_rects:
+				self.people_ranges = Rect()
+				self.people_ranges.x = x
+				self.people_ranges.y = y
+				self.people_ranges.w = w
+				self.people_ranges.h = h
+				self.people.Rect_Array.append(self.people_ranges)
 
-		self.body_pub.publish(self.people)
-
-		return self.people_ranges
+			self.body_pub.publish(self.people)
+			#return self.people_ranges
 
 
 	def draw_rectangles(self,rects, frame):
@@ -191,15 +195,15 @@ class BodyDetector(object):
 
 
 	def run(self):
-        """
+		"""
         main run function for body_detection
         """
-        r = rospy.Rate(10)
-        time.sleep(1)
+		r = rospy.Rate(10)
+		time.sleep(1)
 
-        while rospy.not_shutdown():
-
-            r.sleep()
+		while not rospy.is_shutdown():
+			self.find_bodies()
+			r.sleep()
 
 
 if __name__ == "__main__":

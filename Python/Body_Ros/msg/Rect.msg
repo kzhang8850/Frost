@@ -1,4 +1,4 @@
-uint32 x
-uint32 y
-uint32 w
-uint32 h
+int32 x
+int32 y
+int32 w
+int32 h

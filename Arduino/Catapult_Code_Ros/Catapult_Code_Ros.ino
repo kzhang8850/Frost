@@ -2,6 +2,7 @@
  Final for big launcher, does Pan and Power calculations
  Uses PID for motor control of Pan, and has user input
  */
+ #include <ros.h>
 #include <math.h>
 #include <Servo.h>
 //DC Motor Initialization

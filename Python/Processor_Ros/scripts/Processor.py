@@ -22,25 +22,19 @@ import numpy as np
 import os
 import rospy
 from frost_lidar.msg import Polar_Array
-
-
-def distance_to_motor_power(self, distance):
-    """
-    performs a conversion to get distance into launcher specs
-    """
-    return .0897*(distance - 3.7082)
-
+from processor.msg import Target, Target_Array
+from frost_body.msg import Rect, Rect_Array
 
 class LidarView(object):
     """
     holds the visualization and processing for the LIDAR data
     """
-    def __init__(self, screen, model):
+    def __init__(self, screen, model, targeter):
         rospy.init_node('Processor')
         self.sub = rospy.Subscriber('/lidar_data', Polar_Array, self.laser_callback)
-        #self.sub = rospy.Subscriber('/imu/heading', Float32, self.imu_callback)
-        #self.pub = rospy.Publisher('/wpt/cmd_vel', Float32MultiArray, queue_size = 1)
-        
+        self.sub = rospy.Subscriber('/tracked_people', Rect_Array, self.body_callback)
+        self.pub = rospy.Publisher('/target_data', Target, queue_size = 1)
+        self.targeter = targeter
         self.screen = screen
         self.model = model
         self.center = model.center
@@ -48,7 +42,6 @@ class LidarView(object):
         self.angle_1 = 340
         self.angle_2 = 70
         self.target_angle = 0
-        self.est_dist = 500
         #self.est_threshold = 30
         self.r_min = 1000
         self.target_found = False
@@ -57,11 +50,20 @@ class LidarView(object):
         self.right_angle_max = -500
         self.distance_threshold = 20
         self.dataArray = []
+        self.people = []
+        ##timing
+        self.prev_time = time.time()
+        self.time_to_arm = 6
+        self.time_to_shoot = 8
+        self.time_to_send_angle = .5
+        self.prev_time_angle = time.time()
 
     def laser_callback(self, scan):
         ##data array is a list of polar msgs, so self.dataArray[i].theta = angle,
         ## and self.dataArray[i].r = distance
         self.dataArray = scan.Polar_Array
+    def body_callback(self, rect):
+        self.people = self.targeter.track(rect.Rect_Array)
     def draw(self):
         """
         draws our a projection map of the LIDAR's data, and also computes the angle and distance of the target
@@ -69,16 +71,15 @@ class LidarView(object):
         """
         
         #if there is a target, then get the left angle, right angle, and other information
-        """if(len(target_data) > 0):
-            self.angle_1 = target_data[0][0] #left angle of first target
-            self.angle_2 = target_data[0][1] #right angle of first target
+        if(len(self.people) > 0):
+            self.angle_1 = self.people[0][0] #left angle of first target
+            self.angle_2 = self.people[0][1] #right angle of first target
 
-            self.est_dist = target_data[0][2]
             self.target_found = True
         else:
             self.target_found = False
             self.angle_1 = 0
-            self.angle_2 = 0"""
+            self.angle_2 = 0
             #self.target_angle = 0
 
         self.screen.fill(pygame.Color('grey'))
@@ -94,7 +95,7 @@ class LidarView(object):
                     angle = angle-360
                 if angle>self.angle_1 and angle<self.angle_2:
                     dot_color = pygame.Color('green')
-                    self.data_wedge.append([angle, obj[1]])
+                    self.data_wedge.append([angle, distance])
                 else:
                     dot_color = pygame.Color('red')
 
@@ -143,7 +144,33 @@ class LidarView(object):
         pygame.display.update()
         if(self.r_min == 1000):
             self.target_found = False
-        return (self.target_found, -self.target_angle, self.r_min)
+
+        self.publish_data(self.target_found, -self.target_angle, self.r_min)
+
+    def distance_to_motor_power(self, distance):
+        """
+        performs a conversion to get distance into launcher specs
+        """
+        return .0897*(distance - 3.7082)
+
+    def publish_data(self, target_found, target_angle, target_distance):
+        msg = Target()
+        msg.arm = False
+        msg.angle = 0
+        msg.distance = 0
+        if not target_found:
+            self.prev_time = time.time()
+            #pass
+        else:
+            if(time.time()- self.prev_time_angle > self.time_to_send_angle):
+                msg.angle = target_angle
+
+            if(time.time() - self.prev_time > self.time_to_shoot):
+                self.prev_time = time.time()
+            elif(time.time() - self.prev_time) > self.time_to_arm:
+                msg.arm = True
+                msg.distance = self.distance_to_motor_power(target_distance)
+            self.pub.publish(msg)
 
 class LidarModel(object):
     """
@@ -161,7 +188,6 @@ class TargetLocator(object):
     holds the processing of the Kinect data to find targets
     """
     def __init__(self):
-        self.people = []
         self.kinectFOV = 57 #in degrees
         self.kinectHeight = 240.0
         self.kinectLength = 320.0
@@ -172,26 +198,26 @@ class TargetLocator(object):
         uses the rectangles drawn around targets to find the angle range they lie in
         """
         if(len(crowd)> 0):
-            self.people = []
-            for (x, y, w, h) in crowd:
+            people = []
+            for item in crowd:
+                x = item.x
+                y = item.y
+                w = item.w
+                h = item.h
                 angleMax = (self.kinectLength/2 - x)/(self.kinectLength)*self.kinectFOV
                 angleMin = (self.kinectLength/2 - (x+w))/(self.kinectLength)*self.kinectFOV
-                self.people.append((angleMin, angleMax , self.get_distance_estimate(abs(y-h))))
-            return self.people
+                people.append((angleMin, angleMax))
+            return people
         else:
             return []
 
 
-    def get_distance_estimate(self, height):
-        return -.19012*height + 542.5
-
-
-
 if __name__ == '__main__':
     print 'start'
+    targeter = TargetLocator()
     model = LidarModel();
     screen = pygame.display.set_mode(model.size)
-    view = LidarView(screen, model)
+    view = LidarView(screen, model, targeter)
     r = rospy.Rate(50)
     while not rospy.is_shutdown():
         view.draw()
