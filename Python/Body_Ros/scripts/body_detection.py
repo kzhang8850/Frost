@@ -4,7 +4,7 @@
 """
 Body Detection Module - Acts as Frost's Eyes
 
-Establishes a connection to a USB Camera, in this case a XBox Kinect's RGB Camera
+Establishes a connection to a USB Camera with ROS, in this case a XBox Kinect's RGB Camera
 Receives frames from Kinect and utilizes machine learning classifiers and smoothing algorithms to find and track people
 Displays a live feed of the camera with people bounded in green boxes
 
@@ -15,32 +15,9 @@ Written by Kevin Zhang
 import numpy as np
 import cv2
 import freenect
-from multiprocessing import Process
 import rospy
 from frost_body.msg import Rect
 from frost_body.msg import Rect_Array
-
-class BodyThread(Process):
-	"""
-	multiprocessing class for Kinect multiprocessing and communicating data
-	"""
-	def __init__(self, q):
-		super(BodyThread, self).__init__()
-		self.queue = q
-		self.bodies = BodyDetector()
-		self.body_data = None
-
-	def run(self):
-		while True:
-			self.body_data = self.bodies.find_bodies()
-			if self.body_data is not None:
-				self.queue.put((2, self.body_data))
-			k = cv2.waitKey(30) & 0xff
-
-			if k == 27:
-
-				break
-		self.bodies.shut_down()
 
 
 class BodyDetector(object):
