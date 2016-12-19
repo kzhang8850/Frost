@@ -192,7 +192,7 @@ if __name__ == '__main__':
     model = LidarModel();
     screen = pygame.display.set_mode(model.size)
     view = LidarView(screen, model)
-    #r = rospy.Rate(50)
+    r = rospy.Rate(50)
     while not rospy.is_shutdown():
         view.draw()
-        #r.sleep()
+        r.sleep()

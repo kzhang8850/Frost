@@ -183,7 +183,7 @@ void loop() {
       hex_msg.data = 0xEE;
       chatter.publish(&hex_msg);
       hex_msg.data = 0xFF;
-      chatter.publish(&hex_msg);
+      chatter.publish(&hex_msg);ls
     } else {
       //Serial.println(rotationCounter);
       //Serial.flush();

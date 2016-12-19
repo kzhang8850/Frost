@@ -111,9 +111,8 @@ class Lidar(object):
 if __name__ == '__main__':
     serial = LidarSerial()
     lidar = Lidar(serial)
-    #r = rospy.Rate(1)
+    #r = rospy.Rate(100)
     while not rospy.is_shutdown():
         lidar.run()
         #r.sleep()
-        #rospy.spin()
     serial.ser.close()
