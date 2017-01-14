@@ -1,6 +1,8 @@
 # STARK Industries - Frost
 Frost, an integrated experiment in the fields of computer vision, sensor fusion, and artificial intelligence, is an autonomous robot that can launch snowballs at enemies. Just arm it with snowballs, and watch as it dominates snowball fights on its own, with an accuracy equivalent to or better than a human.
 
+For more information about Frost, check out our website, linked above.
+
 This full codebase cannot be run without Frost - Autonomous Snowball Launcher, which is not out for distribution. It requires a LIDAR, a Kinect camera, and an actuated catapult.
 
 However, it is possible to run components. 
