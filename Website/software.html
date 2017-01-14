@@ -46,7 +46,7 @@
 						<h2>Software</h2>
                         <p>Our software codebase consists mainly of four modules - Body Detection, LIDAR, Processor, and the Main. These modules work together to combine various data streams into a cohesive decision that can be sent to the launcher. Together, they make up Frost’s brain. The dependencies of our software are OpenCV, Numpy, Freenect, and Serial. <br/><br/><strong>View our software code</strong> <a href="https://github.com/kzhang8850/Frost/tree/master/Python/Main">here</a></p>
 					</header>
-                    
+
                     <div class="row">
 						<div class="12u">
                             <div class="box">
@@ -61,7 +61,7 @@
                             <div class="box">
                                 <h3>LIDAR Module - Frost's Depth Perception</h3>
                                 <p>The LIDAR module handles data from the LIDAR. It uses a serial connection to interface with the Arduino attached to the LIDAR. First it receives a protocol from the Arduino to sync the two systems and signify the LIDAR is in the 0 position and will begin a new rotation. It then begins receiving data from the Arduino as hexadecimal numbers. The numbers represent a package consisting of angle and distance. After receiving the package, an algorithm will convert the hexadecimal numbers into base 10 integers and send the data over to the Main Module as it receives it. Once the sync protocol is received again, the module will be notified that it’s starting a new rotation, and will begin converting data once again starting from the origin.</p>
-                                <span class="image fit"><img src="images/Software/software_2.png" alt="" /></span>
+                                <span class="image fit"><img src="images/Lidar/pygamewindow.png" alt="" /></span>
                             </div>
                         </div>
                     </div>
@@ -73,6 +73,8 @@
                                 SerialOut contains the functions needed to push data from the Main Module out to the Arduino attached to the launcher. The SerialOut class’s main function uses a complex decision tree based on timings and conditions that sends specific information at various times. For instance, angle is sent much more often than other data so that the launcher can constantly orient itself to face the target while they move around. Distance is sent less frequently to allow time for the launcher to re-arm.<br/> <br/>
                                 LidarView creates a visualization for the data received from the LIDAR and also computes the distance to the target based on a combination of computations from both the TargetLocator class and this class. Each datapoint from the LIDAR is cumulatively drawn onto a 2D projection of the surroundings, and then the combined computation  from the classes is used to identify what is what in the projection. The distance data is then sent back to the Main Module to be used when the SerialOut class is called.<br/> <br/>
                                 TargetLocator finds the  location of the target using mathematical algorithms in combination with computations from the LIDARView class. The  TargetLocator class calculates location based on its own data and then references data from the LIDARView to refine its own calculation. The location data is then also sent back to the Main Module to be used when the SerialOut class is called.</p>
+
+																<span class="image fit"><img src="images/Software/software_2.png" alt="" /></span>
                             </div>
                         </div>
                     </div>
@@ -94,7 +96,7 @@
                         </div>
                     </div>
  				</section>
-            
+
                 <footer id="footer">
                     <ul class="copyright">
                         <li>
